@@ -1,15 +1,26 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { Button, Input } from 'antd';
+import './static/less/page.less';
+import {
+  HashRouter,
+  Route,
+  Redirect,
+  Switch
+} from 'react-router-dom';
+import Lodaing from './components/loading/loading';
+const Login = React.lazy(() => import('./pages/login/login'));
 
 const Index = () => {
-  const [count, setCount] = React.useState(0);
 
   return (
-    <div>
-      <Button onClick={() => setCount(count+1)}>666</Button>
-      <Input value={count} />
-    </div>
+    <React.Suspense fallback={Lodaing}>
+      <HashRouter> 
+        <Switch>
+          <Route path='/login' component={Login}/>
+          <Route path='/' render={ () => {return <Redirect to='/login'/>} }/>
+        </Switch>
+      </HashRouter>
+    </React.Suspense>
   )
 }
 
