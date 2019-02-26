@@ -1,12 +1,14 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import Button from 'antd/es/button'
-import 'antd/es/button/style';
+import { Button, Input } from 'antd';
 
 const Index = () => {
+  const [count, setCount] = React.useState(0);
+
   return (
     <div>
-      <Button>666</Button>
+      <Button onClick={() => setCount(count+1)}>666</Button>
+      <Input value={count} />
     </div>
   )
 }
