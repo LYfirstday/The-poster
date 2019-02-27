@@ -28,11 +28,33 @@ module.exports = {
         loader: "awesome-typescript-loader",
         options: {
           getCustomTransformers: () => ({
-            before: [ tsImportPluginFactory({
-              libraryName: 'antd',
-              libraryDirectory: 'lib',
-              style: 'css'
-            })]
+            before: [
+              tsImportPluginFactory({
+                libraryName: '@material-ui/core',
+                libraryDirectory: '',
+                camel2DashComponentName: false
+              }),
+              tsImportPluginFactory({
+                libraryDirectory: importName => {
+                  const stringVec = importName.split(/([A-Z][a-z]+|[0-9]*)/)
+                    .filter(s => s.length)
+                    .map(s => s.toLocaleLowerCase())
+              
+                  return stringVec
+                    .reduce((acc, cur, index) => {
+                      if (index > 1) {
+                        return acc + '-' + cur
+                      } else if (index === 1) {
+                        return acc + '/' + cur
+                      }
+                      return acc + cur
+                    }, '')
+                },
+                libraryName: '@material-ui/icons',
+                style: false,
+                camel2DashComponentName: false
+              })
+            ]
           }),
         },
         exclude: /node_modules/

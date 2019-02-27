@@ -1,5 +1,5 @@
 {
-  "name": "TS_Antd",
+  "name": "poster",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -11,13 +11,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@material-ui/core": "^3.9.2",
     "@types/react": "^16.8.5",
     "@types/react-dom": "^16.8.2",
+    "@types/react-loadable": "^5.5.0",
     "@types/react-router": "^4.4.4",
     "@types/react-router-dom": "^4.3.1",
-    "antd": "^3.8.4",
     "react": "^16.8.2",
     "react-dom": "^16.8.2",
+    "react-loadable": "^5.5.0",
     "react-router": "^4.3.1",
     "react-router-dom": "^4.3.1",
     "typescript": "^3.1.6"

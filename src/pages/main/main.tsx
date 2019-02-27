@@ -1,9 +1,10 @@
 import * as React from 'react';
-import './login.less';
+import './main.less';
 
 export default () => {
   return (
-    <section className='login'>
-    </section>
+    <>
+      <h1>Main...</h1>
+    </>
   )
 }

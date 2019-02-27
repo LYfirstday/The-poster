@@ -7,20 +7,31 @@ import {
   Redirect,
   Switch
 } from 'react-router-dom';
-import Lodaing from './components/loading/loading';
-const Login = React.lazy(() => import('./pages/login/login'));
+import Loading from './components/loading/loading';
+import * as Loadable from 'react-loadable';
+
+const Main = Loadable({
+  loader: () => import('./pages/main/main'),
+  loading: Loading,
+  timeout: 8000
+});
+
+const Login = Loadable({
+  loader: () => import('./pages/login/login'),
+  loading: Loading,
+  timeout: 8000
+});
 
 const Index = () => {
 
   return (
-    <React.Suspense fallback={Lodaing}>
-      <HashRouter> 
-        <Switch>
-          <Route path='/login' component={Login}/>
-          <Route path='/' render={ () => {return <Redirect to='/login'/>} }/>
-        </Switch>
-      </HashRouter>
-    </React.Suspense>
+    <HashRouter> 
+      <Switch>
+        <Route path='/index' component={Main}/>
+        <Route path='/login' component={Login}/>
+        <Route path='/' render={ () => {return <Redirect to='/index'/>} }/>
+      </Switch>
+    </HashRouter>
   )
 }
 
