@@ -27,9 +27,9 @@ const Index = () => {
   return (
     <HashRouter> 
       <Switch>
-        <Route path='/index' component={Main}/>
         <Route path='/login' component={Login}/>
-        <Route path='/' render={ () => {return <Redirect to='/index'/>} }/>
+        <Route path='/index' component={Main}/>
+        <Route path='/' render={ () => {return <Redirect to='/login'/>} }/>
       </Switch>
     </HashRouter>
   )
