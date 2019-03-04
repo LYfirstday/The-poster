@@ -3,7 +3,8 @@ import './header.less';
 
 export interface HeaderProps {
   menuChange: boolean,
-  setMenuChange: React.Dispatch<boolean>
+  setMenuChange: React.Dispatch<boolean>,
+  goToLogin: () => void
 }
 
 export default (props: HeaderProps) => {
@@ -38,7 +39,11 @@ export default (props: HeaderProps) => {
         <div className='user-photo'>
           <img src={require('./../../static/imgs/user-photo-42.png')} />
         </div>
-        <a className='logout' href='javascript:void(0)'>退出登录</a>
+        <a
+          onClick={props.goToLogin}
+          className='logout'
+          href='javascript:void(0)'
+        >退出登录</a>
       </div>
     </header>
   )

@@ -39,14 +39,20 @@ const UserDetails = Loadable({
   timeout: 8000
 });
 
-export default () => {
+export default (props: any) => {
 
   // 用来控制导航栏的显示 隐藏
   const [menuChange, setMenuChange] = React.useState(false);
 
+  // 返回登录页，传给Header组件
+  const goToLogin = () => {
+    props.history.push('/login');
+  }
+
   return (
     <>
       <Header
+        goToLogin={goToLogin}
         menuChange={menuChange}
         setMenuChange={setMenuChange}
       />

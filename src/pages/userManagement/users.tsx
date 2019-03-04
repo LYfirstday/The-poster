@@ -2,17 +2,18 @@ import * as React from 'react';
 import './users.less';
 import Table from './../../components/table/table';
 import { TablePagination, TextField, Button } from '@material-ui/core';
-import { paginationReducer } from './../../static/ts/pagiationReducer';
+import { paginationReducer, PaginationState } from './../../static/ts/pagiationReducer';
 
 export default (props: any) => {
   const theadeData = ['用户昵称', '微信号', '性别', '海报模板流量', '操作'];
 
   //  用户列表初始数据
-  const pageInit = {
+  const pageInit: PaginationState = {
     current: 0,
     total: 123,
     pageSize: 10,
     keyword: '',
+    serviceUrl: '',
     data: [{
       label: '1',
       label1: '1',
@@ -20,10 +21,15 @@ export default (props: any) => {
       label3: '1',
     }]
   };
+
+  // 页面所有请求reducers
   const [state, dispatch] = React.useReducer(
     paginationReducer,
     pageInit
   );
+
+  // 关键字查询change事件
+  const [keyword, setKeyword] = React.useState('');
 
   React.useEffect(() => {
     dispatch({type: 'init'});
@@ -34,13 +40,18 @@ export default (props: any) => {
       <div className='user-search'>
         <TextField
           label="关键字搜索"
-          // value={account.userName}
-          // onChange={(e) => setAccount({userName: e.target.value, password: account.password})}
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
           margin="normal"
           className='search-input'
           type='search'
         />
-        <Button variant="contained" color="primary" className='search-btn'>搜索</Button>
+        <Button
+          variant="contained"
+          color="primary"
+          className='search-btn'
+          onClick={() => dispatch({type: 'keyword', state: {keyword: keyword}})}
+        >搜索</Button>
       </div>
       <h2 className='page-title'>用户管理</h2>
       <Table
