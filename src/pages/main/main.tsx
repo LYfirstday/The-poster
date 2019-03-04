@@ -32,6 +32,13 @@ const CreatePoster = Loadable({
   timeout: 8000
 });
 
+// 用户详情 
+const UserDetails = Loadable({
+  loader: () => import('./../userManagement/userDetails'),
+  loading: Loading,
+  timeout: 8000
+});
+
 export default () => {
 
   // 用来控制导航栏的显示 隐藏
@@ -43,11 +50,12 @@ export default () => {
         menuChange={menuChange}
         setMenuChange={setMenuChange}
       />
-      <Aside mainContext={menuChange} />
+      <Aside menuChange={menuChange} />
       <section className='container'>
         <HashRouter> 
           <Switch>
             <Route path='/index/users' component={UserManagement}/>
+            <Route path='/index/userDetails' component={UserDetails}/>
             <Route path='/index/posters' component={PosterManagement}/>
             <Route path='/index/creste' component={CreatePoster}/>
             <Route path='/index' render={ () => {return <Redirect to='/index/users'/>} }/>
