@@ -17,7 +17,6 @@ export default (props: any) => {
       setErrorInfo('登录密码不能为空!');
       return;
     }
-
   }
 
   return (
@@ -28,7 +27,7 @@ export default (props: any) => {
       {/* 右边表单 */}
       <div className='login-inner-right'>
         <div className='login-form'>
-          <img src={require('./../../static/imgs/logo.png')} className='logo' />
+          <img src={require('./../../static/imgs/logo.jpg')} className='logo' />
           <TextField
             label="请输入登录账号"
             value={account.userName}

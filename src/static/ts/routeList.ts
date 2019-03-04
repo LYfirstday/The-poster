@@ -3,7 +3,6 @@ export interface SideListItem {
   activeIconUrl: string,
   context: string,
   path: string,
-  index: number,
   isActive: boolean
 }
 
@@ -21,7 +20,13 @@ export default (userType?: number) => {
           activeIconUrl: require('./../imgs/users-active.png'),
           context: '用户管理',
           path: '/index',
-          index: 0,
+          isActive: false
+        },
+        {
+          iconUrl: require('./../imgs/users.png'),
+          activeIconUrl: require('./../imgs/users-active.png'),
+          context: '活动管理',
+          path: '/index',
           isActive: false
         },
         {
@@ -29,7 +34,6 @@ export default (userType?: number) => {
           activeIconUrl: require('./../imgs/postersManagement-active.png'),
           context: '海报模板管理',
           path: '/index/posters',
-          index: 1,
           isActive: false
         },
         {
@@ -37,7 +41,6 @@ export default (userType?: number) => {
           activeIconUrl: require('./../imgs/posters-active.png'),
           context: '新建海报模板',
           path: '/index/creste',
-          index: 2,
           isActive: false
         }
       ];

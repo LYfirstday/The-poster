@@ -9,7 +9,6 @@ import { withRouter } from 'react-router';
 const Aside = (props: any) => {
   // 初始化导航栏
   const [asideList, setAsideList] = React.useState(sideList());
-
   /**
    * 导航栏点击事件
    * @param index 点击的导航栏下标
@@ -21,6 +20,7 @@ const Aside = (props: any) => {
   }
 
   React.useEffect(() => {
+    // 初始渲染时，设置默认激活导航栏，刷新页面时从sessionStorage中取
     let storage = window.sessionStorage;
     let index = parseInt(storage.getItem('index') as string) ? parseInt(storage.getItem('index') as string) : 0;
     setAsideList(navBarChange(index));
@@ -58,11 +58,10 @@ const Aside = (props: any) => {
   }
 
   return (
-    <aside className='aside'>
+    <aside className={props.menuChange ? 'aside aside-hidden' : 'aside'}>
       <nav className='nav'>
         <List component="nav">
-          {
-            asideList.map((val, i) => 
+          {asideList.map((val, i) => 
               <ListItem
                 button
                 key={i}
@@ -72,8 +71,7 @@ const Aside = (props: any) => {
                 <img src={val.isActive ? val.activeIconUrl : val.iconUrl} />
                 {val.context}
               </ListItem>
-            )
-          }
+            )}
         </List>
       </nav>
     </aside>

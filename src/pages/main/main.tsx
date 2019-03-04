@@ -33,10 +33,17 @@ const CreatePoster = Loadable({
 });
 
 export default () => {
+
+  // 用来控制导航栏的显示 隐藏
+  const [menuChange, setMenuChange] = React.useState(false);
+
   return (
     <>
-      <Header />
-      <Aside />
+      <Header
+        menuChange={menuChange}
+        setMenuChange={setMenuChange}
+      />
+      <Aside mainContext={menuChange} />
       <section className='container'>
         <HashRouter> 
           <Switch>
