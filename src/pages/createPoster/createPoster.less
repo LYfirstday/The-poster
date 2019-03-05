@@ -1,0 +1,135 @@
+
+.create-poster {
+  position: relative;
+  display: flex;
+  flex-wrap: nowrap;
+  padding: 20px 0 20px 20px;
+  width: 100%;
+  background-color: #eee;
+  min-height: calc(100vh - 8rem);
+  &::after {
+    display: block;
+    content: '';
+    clear: both;
+  }
+  &-left {
+    float: left;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 12rem);
+    width: 75%;
+    transition: all .3s;
+    .poster-canvas {
+      position: relative;
+      height: 736px;
+      width: 414px;
+      border: 1px solid #eee;
+      box-shadow: 0 0 5px 0 #ccc;
+      background: #fff;
+      // background: url(./../../static/imgs/test.jpg) no-repeat center;
+      background-size: cover;
+    }
+  }
+  &-right {
+    float: right;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: calc(100vh - 12rem);
+    width: 25%;
+    min-width: 30rem;
+    transition: all .3s;
+    background-color: #fefefe;
+    .contorl-panel {
+      &-title {
+        padding: 1rem;
+        width: 100%;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #333;
+        border-bottom: 1px solid #ccc;
+      }
+      &-items {
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+        width: 100%;
+        .item {
+          display: flex;
+          flex-wrap: nowrap;
+          align-items: center;
+          padding-bottom: 1rem;
+          width: 100%;
+          &-title {
+            margin-right: 1rem;
+            width: 5.5rem;
+            color: #888;
+            text-align: right;
+          }
+          &-content {
+            display: flex;
+            flex-wrap: nowrap;
+          }
+          .color-input {
+            margin-right: 1rem;
+          }
+          .color-value-input {
+            padding: .2rem .5rem;
+            margin-right: 1rem;
+            outline: none;
+            width: 6rem;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            transition: all .3s;
+            &:hover {
+              border: 1px solid #537eb7;
+            }
+            &:focus {
+              border: 1px solid #537eb7;
+            }
+          }
+          .tips {
+            font-size: .7rem;
+            color: red;
+          }
+          &-upload {
+            position: relative;
+            width: 70%;
+            &-btn {
+              z-index: 1;
+              background-color: #50a9fd;
+              width: 100%;
+            }
+            &-file {
+              position: absolute;
+              z-index: 2;
+              left: 0;
+              top: 0;
+              opacity: 0;
+              height: 100%;
+              width: 100%;
+              cursor: pointer;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media screen and(max-width: 1367px) {
+  .create-poster {
+    &-left {
+      width: 85%;
+      .poster-canvas {
+        height: 588.8px;
+        width: 331.2px;
+      }
+    }
+    &-right {
+      min-width: 20rem;
+      width: 15%;
+    }
+  }
+}

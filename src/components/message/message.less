@@ -1,0 +1,26 @@
+.message {
+  padding: 1rem;
+  position: fixed;
+  top: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 1px solid #eee;
+  border-radius: 4px;
+  min-width: 20rem;
+  box-shadow: 0 0 5px 0 #ccc;
+  z-index: 999;
+  background-color: #fff;
+  opacity: 0;
+  animation: showMessage .3s ease-in 0s 1 normal forwards;
+}
+
+@keyframes showMessage {
+  from {
+    opacity: 0;
+    top: -5rem;
+  }
+  to {
+    opacity: 1;
+    top: 3rem;
+  }
+}

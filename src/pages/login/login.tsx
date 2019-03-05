@@ -28,29 +28,32 @@ export default (props: any) => {
       <div className='login-inner-right'>
         <div className='login-form'>
           <img src={require('./../../static/imgs/logo.jpg')} className='logo' />
-          <TextField
-            label="请输入登录账号"
-            value={account.userName}
-            onChange={(e) => setAccount({userName: e.target.value, password: account.password})}
-            margin="normal"
-            className='input'
-            type='text'
-          />
-          <TextField
-            label="请输入登录密码"
-            type='password'
-            value={account.password}
-            onChange={(e) => setAccount({userName: account.userName, password: e.target.value})}
-            margin="normal"
-            className='input password'
-          />
-          <p className='error-info'>{errorInfo}</p>
-          <Button
-            onClick={doLogin}
-            variant="contained"
-            color="primary"
-            className='login-btn'
-          >登 录</Button>
+          <form>
+            <TextField
+              label="请输入登录账号"
+              value={account.userName}
+              onChange={(e) => setAccount({userName: e.target.value, password: account.password})}
+              margin="normal"
+              className='input'
+              type='text'
+            />
+            <TextField
+              label="请输入登录密码"
+              type='password'
+              value={account.password}
+              onChange={(e) => setAccount({userName: account.userName, password: e.target.value})}
+              margin="normal"
+              className='input password'
+            />
+            <p className='error-info'>{errorInfo}</p>
+            <Button
+              onClick={doLogin}
+              variant="contained"
+              color="primary"
+              type='submit'
+              className='login-btn'
+            >登 录</Button>
+          </form>
         </div>
       </div>
       </div>

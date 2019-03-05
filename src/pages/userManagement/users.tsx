@@ -9,11 +9,11 @@ export default (props: any) => {
 
   //  用户列表初始数据
   const pageInit: PaginationState = {
-    current: 0,
+    current: 0,  // 当前页，UI组件从0开始
     total: 123,
     pageSize: 10,
     keyword: '',
-    serviceUrl: '',
+    serviceUrl: '',  // 请求接口地址
     data: [{
       label: '1',
       label1: '1',
