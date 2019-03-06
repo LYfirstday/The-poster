@@ -1,0 +1,37 @@
+.canvas-img-com {
+  position: absolute;
+  padding: 20px;
+  transition: all .3s;
+  &-inner {
+    height: 150px;
+    width: 300px;
+    background-size: cover !important;
+  }
+  &:hover &-inner {
+    outline: 1px dashed #fc4848;
+    cursor: move;
+  }
+  &:hover .operation-img {
+    display: inline-flex;
+  }
+  .operation-img {
+    position: absolute;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    height: 20px;
+    width: 20px;
+    background-color: #fc4848;
+    border-radius: 50%
+  }
+  .delete-img {
+    top: 10px;
+    left: 10px;
+    cursor: pointer;
+  }
+  .move-img {
+    bottom: 10px;
+    right: 10px;
+    cursor: move;
+  }
+}
