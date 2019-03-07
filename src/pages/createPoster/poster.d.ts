@@ -31,7 +31,6 @@ export interface ImgElementStyleType {
   width: string,
   top: string,  // 位置属性，对应Y坐标
   left: string,  // 位置属性，对应X坐标
-  transform: string,  // 旋转角度 rotate()
   zIndex: number,
 }
 
@@ -39,5 +38,6 @@ export interface ImgElementStyleType {
 export interface ImgOuterElementStyleType {
   top: string,
   left: string,
-  zIndex: number
+  zIndex: number,
+  transform: string,  // 旋转角度 rotate()
 }

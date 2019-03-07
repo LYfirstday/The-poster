@@ -91,8 +91,16 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
       let thisImgDown = listImgs.filter(val => {
         return elId === val.id;
       })[0];
-      thisImgDown.distanceY = distanceYDown;
-      thisImgDown.distanceX = distanceXDown;
+      listImgs.map(val => {
+        if (elId === val.id) {
+          val.distanceY = distanceYDown;
+          val.distanceX = distanceXDown;
+          val.isChecked = true;
+        } else {
+          val.isChecked = false;
+        }
+      })
+      
       return {
         ...state,
         pageCheckedType: 'image',
@@ -161,16 +169,25 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
       let elIdSize = action.state.elId;
       // 获取state中的该元素
       let listImgsSize = state.imgsArrayList;
+
+      let thisImgSize = listImgsSize.filter(val => {
+        return elIdSize === val.id;
+      })[0];
       listImgsSize.map(val => {
         if (elIdSize === val.id) {
           val.distanceY = eventSize.clientY;
           val.distanceX = eventSize.clientX;
+          val.isChecked = true;
+        } else {
+          val.isChecked = false;
         }
       })
+
       return {
         ...state,
         pageCheckedType: 'image',
         title: '图片属性',
+        activeElement: thisImgSize,
         imgsArrayList: [
           ...listImgsSize
         ]
@@ -217,7 +234,21 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         ]
       };
     case 'imgElementForm':
-      return state;
+      // 获取state中的该元素 isChecked为true
+      let elementList = state.imgsArrayList;
+      let thisElement = elementList.filter(val => {
+        return val.isChecked === true;
+      })[0];
+      thisElement.outerElementStyles = {
+        ...thisElement.outerElementStyles,
+        ...action.state.imgFormValue
+      };
+      return {
+        ...state,
+        imgsArrayList: [
+          ...elementList
+        ]
+      };
     default:
       return state;
   }

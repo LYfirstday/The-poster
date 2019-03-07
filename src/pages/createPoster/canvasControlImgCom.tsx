@@ -2,28 +2,36 @@
 import * as React from 'react';
 import './canvasControlImgCom.less';
 import Slider from '@material-ui/lab/Slider';
-import { rotateValueFilter } from './../../static/ts/tools';
+import { rotateValueFilter, oppositeRotateValueFilter } from './../../static/ts/tools';
 import { Switch } from '@material-ui/core';
-import { ImgElementStyleType } from './poster';
+// import { ImgElementStyleType } from './poster';
 
-export interface ImgFormType {
-  imgFormValue: ImgElementStyleType
-}
+// export interface ImgFormType {
+//   imgFormValue: Partial<ImgElementStyleType>
+// }
 
 export interface ControlImgComPropsType {
-  onimgElementFormChange: (imgFormValue: ImgElementStyleType) => void,
-  activeImgObject: any
+  onimgElementFormChange: (imgFormValue: any) => void,
+  activeImgObject: any,
 }
 
 const CanvasControlImgCom = (props: ControlImgComPropsType) => {
 
-  const [rotate, setRotate] = React.useState(50);
+  // 旋转角度
+  const [rotate, setRotate] = React.useState(oppositeRotateValueFilter(props.activeImgObject.outerElementStyles.transform));
 
-  function onRotateChange(e: any, val: number) {
-    console.log(val)
+  function onRotateChange(val: number, type: string, e: any) {
+    // 将滑块在50值中的比例换算到180中，得出角度数值
+    let rotateValue = (50 - val)/50 * 180;
+    let rotate = `rotate(${rotateValue}deg)`;
     setRotate(val);
-    // props.onimgElementFormChange();
+    props.onimgElementFormChange({transform: rotate});
   }
+  // setRotate(oppositeRotateValueFilter(props.activeImgObject.outerElementStyles.transform));
+
+  React.useEffect(() => {
+    setRotate(oppositeRotateValueFilter(props.activeImgObject.outerElementStyles.transform));
+  }, [props.activeImgObject]);
 
   return (
     <>
@@ -59,12 +67,12 @@ const CanvasControlImgCom = (props: ControlImgComPropsType) => {
             className='img-com-input'
             type='text'
             style={{width: '3rem', marginRight: '.5rem'}}
-            value={`${rotateValueFilter(props.activeImgObject.elementStyles.transform)}°`}
+            value={`${rotateValueFilter(props.activeImgObject.outerElementStyles.transform)}°`}
           />
         <Slider
           value={rotate}
           aria-labelledby="label"
-          onChange={onRotateChange}
+          onChange={(e, val) => onRotateChange(val, 'rotate', e)}
         />
       </div>
       <div className='item'>

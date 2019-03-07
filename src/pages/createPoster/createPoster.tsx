@@ -1,7 +1,7 @@
 import * as React from 'react';
 import './createPoster.less';
 import CanvasControlCom from './canvasControlCom';
-import { ControlPanelListType } from './poster';
+import { ControlPanelListType, ImgElementStyleType } from './poster';
 import { CanvasPageState, CanvasPageReducer } from './createPosterReducers/createPosterReducers';
 import CanvasImgCom from './canvasImgCom';
 import CanvasControlImgCom from './canvasControlImgCom';
@@ -45,13 +45,13 @@ const pageInitState: CanvasPageState = {
         width: '300px',
         top: '292px',
         left: '56px',
-        transform: 'rotate(0)',
         zIndex: 1
       },
       outerElementStyles: {
         top: '272px',
         left: '36px',
-        zIndex: 1
+        zIndex: 1,
+        transform: 'rotate(0)',
       },
       isAllowEdit: true,
       distanceY: 0,
@@ -67,13 +67,13 @@ const pageInitState: CanvasPageState = {
         width: '60px',
         top: '120px',
         left: '56px',
-        transform: 'rotate(0)',
         zIndex: 1
       },
       outerElementStyles: {
         top: '100px',
         left: '36px',
-        zIndex: 1
+        zIndex: 1,
+        transform: 'rotate(0)',
       },
       isAllowEdit: false,
       distanceY: 0,
@@ -218,10 +218,10 @@ export default () => {
             state.pageCheckedType === 'image' ?
               <CanvasControlImgCom
                 activeImgObject={state.activeElement}
-                onimgElementFormChange={(val) => dispatch({
+                onimgElementFormChange={(val: Partial<ImgElementStyleType>) => dispatch({
                   type: 'imgElementForm',
                   state: {
-                    imgFormValue: val
+                    imgFormValue: val,
                   }
                 })}
               /> : null

@@ -71,15 +71,14 @@ const CanvasImgCom = (props: ImgComPropsType) => {
         style={{...val.outerElementStyles}}
         id={val.id} key={`${val.id}_${i}`}
       >
-        <p className='delete-img' onClick={() => onDeleteImgClick(i)}>
-        </p>
+        <p className={val.isChecked ? 'delete-img operation-img-active' : 'delete-img'} onClick={() => onDeleteImgClick(i)}></p>
         <p
-          className='operation-img move-img'
+          className={val.isChecked ? 'move-img operation-img-active' : 'move-img'}
           onMouseDown={() => onImgSizeMousedown(val.id)}
         >
         </p>
         <div
-          className='canvas-img-com-inner'
+          className={val.isChecked ? 'canvas-img-com-inner inner-active' : 'canvas-img-com-inner'}
           onMouseDown={() => onImgMousedown(val.id)}
           style={{background: `url(${val.imgUrl}) no-repeat center`, ...val.elementStyles}}
         >
