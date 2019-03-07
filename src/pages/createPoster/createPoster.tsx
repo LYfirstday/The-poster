@@ -4,6 +4,7 @@ import CanvasControlCom from './canvasControlCom';
 import { ControlPanelListType } from './poster';
 import { CanvasPageState, CanvasPageReducer } from './createPosterReducers/createPosterReducers';
 import CanvasImgCom from './canvasImgCom';
+import CanvasControlImgCom from './canvasControlImgCom';
 
 
 // 控制板右边浮动菜单
@@ -42,16 +43,41 @@ const pageInitState: CanvasPageState = {
       elementStyles: {
         height: '150px',
         width: '300px',
-        top: '0',
-        left: '0',
+        top: '292px',
+        left: '56px',
         transform: 'rotate(0)',
         zIndex: 1
       },
       outerElementStyles: {
         top: '272px',
-        left: '36px'
+        left: '36px',
+        zIndex: 1
       },
-      isAllowEdit: false
+      isAllowEdit: true,
+      distanceY: 0,
+      distanceX: 0
+    },
+    {
+      elementType: 'image',
+      id: 'image125534',
+      isChecked: false,
+      imgUrl: require('./../../static/imgs/login-inner.png'),
+      elementStyles: {
+        height: '100px',
+        width: '60px',
+        top: '120px',
+        left: '56px',
+        transform: 'rotate(0)',
+        zIndex: 1
+      },
+      outerElementStyles: {
+        top: '100px',
+        left: '36px',
+        zIndex: 1
+      },
+      isAllowEdit: false,
+      distanceY: 0,
+      distanceX: 0
     }
   ],
   title: '画布属性',
@@ -60,7 +86,9 @@ const pageInitState: CanvasPageState = {
   errorInfo: '',
   canvasBacImgUrl: '',
   canvasBackground: `url('') no-repeat center #fff`,
-  controlPanelListInfo: controlPanelListInfo
+  controlPanelListInfo: controlPanelListInfo,
+  activeElement: {},
+  pageCheckedType: 'none'
 };
 
 export default () => {
@@ -91,8 +119,31 @@ export default () => {
           {/* 图片元素属性控制面板 */}
           <CanvasImgCom
             imgsArrayList={state.imgsArrayList}
-            onImgMousedown={(e) => dispatch({type: 'imgMousedown', state: {event: e}})}
-            onImgMousemove={(e) => dispatch({type: 'imgMousemove', state: {event: e}})}
+            onImgMousedown={(e, id, offsetTop, offsetLeft) => 
+                            dispatch({      // 组件向action中传入event、当前选中元素id、元素本身的offsetTop offsetLeft值
+                              type: 'imgMousedown', 
+                              state: {
+                                event: e, 
+                                elId: id, 
+                                offsetTop: offsetTop, 
+                                offsetLeft: offsetLeft
+                              }}
+                            )}
+            onImgMousemove={(e, id) => dispatch({type: 'imgMousemove', state: {event: e, elId: id}})}
+            onImgMouseup={(e, id) => dispatch({type: 'imgMouseup', state: {event: e, elId: id}})}
+            onDeleteImgClick={(i) => dispatch({type: 'deleteImgElement', state: {index: i}})}
+            onImgSizeMousedown={(e, id, offsetTop, offsetLeft) =>
+                                  dispatch({
+                                    type: 'imgSizeMousedown',
+                                    state: {
+                                      event: e,
+                                      elId: id,
+                                      offsetTop: offsetTop,
+                                      offsetLeft: offsetLeft}
+                                  })
+                                }
+            onImgSizeMousemove={(e, id) => dispatch({type: 'imgSizeMousemove', state: {event: e, elId: id}})}
+            onImgSizeMouseup={(e, id) => dispatch({type: 'imgSizeMouseup', state: {event: e, elId: id}})} 
           />
         </div>
       </div>
@@ -138,41 +189,43 @@ export default () => {
             <img src={state.controlPanelListInfo[3].imgUrl} />
             <span>{state.controlPanelListInfo[3].label}</span>
           </div>
-          {/* // {state.controlPanelListInfo.map((val, i) =>
-          //   <>
-          //     <div
-          //       className={val.isActive ? 'contorl-item contorl-item-active' : 'contorl-item'}
-          //       key={`${val.label}_${i}`}
-          //       // state传入点击的菜单脚标i值
-          //       onClick={() => dispatch({type: 'floatMenu', state: {floatMenu: i}})}
-          //     >
-          //       <img src={val.imgUrl} />
-          //       <span>{val.label}</span>
-          //     </div>
-          //     {
-          //       i >= state.controlPanelListInfo.length - 1 ? null : <p className='nav' key={i}></p>
-          //     }
-          //   </>
-          // )} */}
         </div>
 
         {/* 画布title */}
         <p className='contorl-panel-title'>{state.title}</p>
 
-        {/* 画布元素各项选择控件 */}
+        {/* 画布基本元素各项选择控件 */}
         <div className='contorl-panel-items'>
+
           {/* 画布属性控制面板 */}
-          <CanvasControlCom
-            color={state.canvasBacColor}
-            colorValue={state.canvasBacInputValue}
-            errorInfo={state.errorInfo}
-            // state 传入改变后的颜色值
-            onColorChange={(val: string) => dispatch({type: 'bacColor', state: {bacColor: val}})}
-            // state 传入改变后的颜色值
-            onColorValueChange={(val: string) => dispatch({type: 'bacColorValue', state: {bacColorValue: val}})}
-            // state 传入错误提示info
-            onErrorInfoChange={(val: string) => dispatch({type: 'errorInfo', state: {errorInfo: val}})}
-          />
+          {
+            state.pageCheckedType === 'none' ?
+              <CanvasControlCom
+                color={state.canvasBacColor}
+                colorValue={state.canvasBacInputValue}
+                errorInfo={state.errorInfo}
+                // state 传入改变后的颜色值
+                onColorChange={(val: string) => dispatch({type: 'bacColor', state: {bacColor: val}})}
+                // state 传入改变后的颜色值
+                onColorValueChange={(val: string) => dispatch({type: 'bacColorValue', state: {bacColorValue: val}})}
+                // state 传入错误提示info
+                onErrorInfoChange={(val: string) => dispatch({type: 'errorInfo', state: {errorInfo: val}})}
+              /> : null
+          }
+
+          {/* 图片元素控制面板 */}
+          {
+            state.pageCheckedType === 'image' ?
+              <CanvasControlImgCom
+                activeImgObject={state.activeElement}
+                onimgElementFormChange={(val) => dispatch({
+                  type: 'imgElementForm',
+                  state: {
+                    imgFormValue: val
+                  }
+                })}
+              /> : null
+          }
           
         </div>
       </div>

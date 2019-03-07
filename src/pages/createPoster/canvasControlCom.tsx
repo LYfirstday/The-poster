@@ -1,4 +1,4 @@
-// 画布属性控制组件
+// 画布属性控制面板组件
 import * as React from 'react';
 import { Button, TextField } from '@material-ui/core';
 

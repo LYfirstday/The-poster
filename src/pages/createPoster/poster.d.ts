@@ -20,7 +20,9 @@ export interface ImgElementType {
   imgUrl: string,  // 图片地址
   elementStyles: ImgElementStyleType,
   outerElementStyles: ImgOuterElementStyleType,
-  isAllowEdit: boolean
+  isAllowEdit: boolean,
+  distanceY: number,   // 保存mousedown时的top和left,mousemove时计算两个差值，改变图片元素位置
+  distanceX: number,
 }
 
 // 图片元素样式类型
@@ -37,4 +39,5 @@ export interface ImgElementStyleType {
 export interface ImgOuterElementStyleType {
   top: string,
   left: string,
+  zIndex: number
 }
