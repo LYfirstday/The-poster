@@ -40,7 +40,7 @@ export default (userType?: number) => {
           iconUrl: require('./../imgs/posters.png'),
           activeIconUrl: require('./../imgs/posters-active.png'),
           context: '新建海报模板',
-          path: '/index/creste',
+          path: '/index/create',
           isActive: false
         }
       ];

@@ -63,7 +63,7 @@ export default (props: any) => {
             <Route path='/index/users' component={UserManagement}/>
             <Route path='/index/userDetails' component={UserDetails}/>
             <Route path='/index/posters' component={PosterManagement}/>
-            <Route path='/index/creste' component={CreatePoster}/>
+            <Route path='/index/create' component={CreatePoster}/>
             <Route path='/index' render={ () => {return <Redirect to='/index/users'/>} }/>
           </Switch>
         </HashRouter>

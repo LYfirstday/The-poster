@@ -20,14 +20,14 @@ const CanvasControlImgCom = (props: ControlImgComPropsType) => {
   // 旋转角度
   const [rotate, setRotate] = React.useState(oppositeRotateValueFilter(props.activeImgObject.outerElementStyles.transform));
 
-  function onRotateChange(val: number, type: string, e: any) {
+  function onRotateChange(val: number) {
     // 将滑块在50值中的比例换算到180中，得出角度数值
     let rotateValue = (50 - val)/50 * 180;
     let rotate = `rotate(${rotateValue}deg)`;
     setRotate(val);
+    // let dom = document.querySelector(`#${props.activeImgObject.id}`) as HTMLElement;
     props.onimgElementFormChange({transform: rotate});
   }
-  // setRotate(oppositeRotateValueFilter(props.activeImgObject.outerElementStyles.transform));
 
   React.useEffect(() => {
     setRotate(oppositeRotateValueFilter(props.activeImgObject.outerElementStyles.transform));
@@ -72,7 +72,7 @@ const CanvasControlImgCom = (props: ControlImgComPropsType) => {
         <Slider
           value={rotate}
           aria-labelledby="label"
-          onChange={(e, val) => onRotateChange(val, 'rotate', e)}
+          onChange={(e, val) => onRotateChange(val)}
         />
       </div>
       <div className='item'>

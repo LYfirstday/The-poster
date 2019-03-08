@@ -42,14 +42,14 @@ const pageInitState: CanvasPageState = {
       imgUrl: require('./../../static/imgs/login-inner.png'),
       elementStyles: {
         height: '150px',
-        width: '300px',
-        top: '292px',
-        left: '56px',
+        width: '150px',
+        top: '290px',
+        left: '130px',
         zIndex: 1
       },
       outerElementStyles: {
-        top: '272px',
-        left: '36px',
+        top: '270px',
+        left: '110px',
         zIndex: 1,
         transform: 'rotate(0)',
       },
@@ -65,12 +65,12 @@ const pageInitState: CanvasPageState = {
       elementStyles: {
         height: '100px',
         width: '60px',
-        top: '120px',
+        top: '70px',
         left: '56px',
         zIndex: 1
       },
       outerElementStyles: {
-        top: '100px',
+        top: '50px',
         left: '36px',
         zIndex: 1,
         transform: 'rotate(0)',
@@ -116,6 +116,22 @@ export default () => {
       <div className='create-poster-left'>
         {/* 左侧画板 */}
         <div className='poster-canvas' style={{background: state.canvasBackground}}>
+          <p style={{
+            height: '100%',
+            width: '2px',
+            position: 'absolute',
+            top: 0,
+            left: 'calc(50% - 2px)',
+            backgroundColor: '#333'
+          }}></p>
+          <p style={{
+            width: '100%',
+            height: '2px',
+            position: 'absolute',
+            left: 0,
+            top: 'calc(50% - 2px)',
+            backgroundColor: '#333'
+          }}></p>
           {/* 图片元素属性控制面板 */}
           <CanvasImgCom
             imgsArrayList={state.imgsArrayList}

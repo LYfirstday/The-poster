@@ -3,6 +3,7 @@ import { ControlPanelListType, ImgElementType } from './../poster';
 // 当前页面选中元素状态，none:无选中元素，控制面板显示画板控制；image:选中图片元素，控制面
 // 板显示图片控制面板；text：文本元素被选中;默认为none
 export type PageCheckedType = 'none' | 'image' | 'text';
+import { rotateValueFilter } from './../../../static/ts/tools';
 
 // 整个画板页面状态树
 export interface CanvasPageState {
@@ -201,15 +202,57 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
       let thisImgSizeMove = listImgsSizeMove.filter(val => {
         return elIdSizeMove === val.id;
       })[0];
+
+      // 鼠标mousedown时记录的位置
       let disYSize = thisImgSizeMove.distanceY;
       let disXSize = thisImgSizeMove.distanceX;
+      // 当前图片宽高
+      let imgHieght = parseInt(thisImgSizeMove.elementStyles.height);
+      let imgWidth = parseInt(thisImgSizeMove.elementStyles.width);
+      // 当前鼠标移动时和mousedowen记录的位置 差值
+      // Y轴差值
+      let diffDisY = disYSize - eventSizeMove.clientY;
+      // X轴差值
+      let diffDisX = disXSize - eventSizeMove.clientX;
+
       // 设置图片大小
       // 图片宽、高 = 旧的宽、高值 - 鼠标移动的距离
-      thisImgSizeMove.elementStyles.height = `${parseInt(thisImgSizeMove.elementStyles.height) - (disYSize - eventSizeMove.clientY)}px`;
-      thisImgSizeMove.elementStyles.width = `${parseInt(thisImgSizeMove.elementStyles.width) - (disXSize - eventSizeMove.clientX)}px`;
+      // 将图片以中心视为坐标轴，分四个象限，右下角控制宽高按钮在不同象限设置宽高数据不同
+      let rotateDeg:number = rotateValueFilter(thisImgSizeMove.outerElementStyles.transform);
+
+      // 在第一象限时 X轴的差值等于元素高度变化值；Y轴的差值等于元素宽度变化值
+      if (rotateDeg < -45 && rotateDeg >= -135) {
+        thisImgSizeMove.elementStyles.width = `${imgHieght - diffDisY}px`;
+        thisImgSizeMove.elementStyles.height = `${imgWidth - diffDisX}px`;
+      }
+
+      // 在第二象限时 Y轴的差值等于元素高度变化值，X轴的差值等于元素宽度变化值
+      if (rotateDeg >= -45 && rotateDeg <= 45) {
+        thisImgSizeMove.elementStyles.height = `${imgHieght - diffDisY}px`;
+        thisImgSizeMove.elementStyles.width = `${imgWidth - diffDisX}px`;
+      }
+
+      // 在第三象限时
+      if (rotateDeg > 45 && rotateDeg <= 135) {
+
+      }
+
+      // 在第四象限时
+      if ((rotateDeg > 135 && rotateDeg <= 180) || (rotateDeg < -135 && rotateDeg >= -180)) {
+
+      }
+
       // !!! 因为要给高、宽赋值，所以每次计算差值都要从最新的鼠标位置计算，将最新的event事件鼠标的位置重新赋值给dis
       thisImgSizeMove.distanceX = eventSizeMove.clientX;
       thisImgSizeMove.distanceY = eventSizeMove.clientY;
+
+      console.log('-------------')
+      console.log(Math.round(Math.atan(imgHieght/imgWidth) / (Math.PI / 180)))
+      // console.log(rotateValueFilter(thisImgSizeMove.outerElementStyles.transform))
+      // console.log(disXSize, disYSize)
+      // console.log(eventSizeMove.clientX, eventSizeMove.clientY);
+      // console.log(disXSize - eventSizeMove.clientX, disYSize - eventSizeMove.clientY);
+
       return {
         ...state,
         imgsArrayList: [
