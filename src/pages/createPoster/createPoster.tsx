@@ -1,10 +1,12 @@
 import * as React from 'react';
 import './createPoster.less';
-import CanvasControlCom from './canvasControlCom';
-import { ControlPanelListType, ImgElementStyleType } from './poster';
+// import CanvasControlCom from './canvasControlCom';
+import { ControlPanelListType } from './poster';
+import CanvasControlImgCom, { imgFormValueType, PositionTopLeftType } from './canvasControlImgCom';
 import { CanvasPageState, CanvasPageReducer } from './createPosterReducers/createPosterReducers';
 import CanvasImgCom from './canvasImgCom';
-import CanvasControlImgCom from './canvasControlImgCom';
+import CanvasTextCom from './canvasTextCom';
+import CanvasControlTextCom from './canvasControlTextCom';
 
 
 // 控制板右边浮动菜单
@@ -35,50 +37,50 @@ const controlPanelListInfo: ControlPanelListType[] = [
 const pageInitState: CanvasPageState = {
   pageStepState: [],  // 存储页面每次修改的状态(不包括和画布无关的操作状态)
   imgsArrayList: [  // 储存画布图片元素数组
-    {
-      elementType: 'image',
-      id: 'image1234',
-      isChecked: false,
-      imgUrl: require('./../../static/imgs/login-inner.png'),
-      elementStyles: {
-        height: '150px',
-        width: '150px',
-        top: '290px',
-        left: '130px',
-        zIndex: 1
-      },
-      outerElementStyles: {
-        top: '270px',
-        left: '110px',
-        zIndex: 1,
-        transform: 'rotate(0)',
-      },
-      isAllowEdit: true,
-      distanceY: 0,
-      distanceX: 0
-    },
-    {
-      elementType: 'image',
-      id: 'image125534',
-      isChecked: false,
-      imgUrl: require('./../../static/imgs/login-inner.png'),
-      elementStyles: {
-        height: '100px',
-        width: '60px',
-        top: '70px',
-        left: '56px',
-        zIndex: 1
-      },
-      outerElementStyles: {
-        top: '50px',
-        left: '36px',
-        zIndex: 1,
-        transform: 'rotate(0)',
-      },
-      isAllowEdit: false,
-      distanceY: 0,
-      distanceX: 0
-    }
+    // {
+    //   elementType: 'image',
+    //   id: 'image1234',
+    //   isChecked: false,
+    //   imgUrl: require('./../../static/imgs/login-inner.png'),
+    //   elementStyles: {
+    //     height: '150px',
+    //     width: '150px',
+    //     top: '290px',
+    //     left: '130px',
+    //     zIndex: 1
+    //   },
+    //   outerElementStyles: {
+    //     top: '270px',
+    //     left: '110px',
+    //     zIndex: 1,
+    //     transform: 'rotate(0)',
+    //   },
+    //   isAllowEdit: false,
+    //   distanceY: 0,
+    //   distanceX: 0
+    // },
+    // {
+    //   elementType: 'image',
+    //   id: 'image125534',
+    //   isChecked: false,
+    //   imgUrl: require('./../../static/imgs/login-inner.png'),
+    //   elementStyles: {
+    //     height: '100px',
+    //     width: '60px',
+    //     top: '70px',
+    //     left: '56px',
+    //     zIndex: 1
+    //   },
+    //   outerElementStyles: {
+    //     top: '50px',
+    //     left: '36px',
+    //     zIndex: 1,
+    //     transform: 'rotate(0)',
+    //   },
+    //   isAllowEdit: false,
+    //   distanceY: 0,
+    //   distanceX: 0
+    // }
   ],
   title: '画布属性',
   canvasBacColor: '#ffffff',
@@ -111,27 +113,31 @@ export default () => {
     dispatch({type: 'floatMenu', state: {floatMenu: 0, imgUrl: require('./../../static/imgs/login-inner.png')}})
   }
 
+  React.useEffect(() => {
+    let dom = document.querySelector('#createPoster') as HTMLElement;
+    dom.addEventListener('click', pageEventListener, false)
+
+    return () => {
+      dom.removeEventListener('click', pageEventListener, false);
+    }
+  }, []);
+
+  function pageEventListener() {
+    let el = event!.target as HTMLElement;
+    if (el.classList.contains('create-poster-left') || el.classList.contains('poster-canvas')) {
+      dispatch({ type: 'pageElementChange', state: {value: 'none'} });
+    }
+  }
+
   return (
-    <div className='create-poster'>
+    <div className='create-poster' id='createPoster'>
       <div className='create-poster-left'>
         {/* 左侧画板 */}
-        <div className='poster-canvas' style={{background: state.canvasBackground}}>
-          <p style={{
-            height: '100%',
-            width: '2px',
-            position: 'absolute',
-            top: 0,
-            left: 'calc(50% - 2px)',
-            backgroundColor: '#333'
-          }}></p>
-          <p style={{
-            width: '100%',
-            height: '2px',
-            position: 'absolute',
-            left: 0,
-            top: 'calc(50% - 2px)',
-            backgroundColor: '#333'
-          }}></p>
+        <div
+          className='poster-canvas'
+          style={{background: state.canvasBackground}}
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* 图片元素属性控制面板 */}
           <CanvasImgCom
             imgsArrayList={state.imgsArrayList}
@@ -161,6 +167,9 @@ export default () => {
             onImgSizeMousemove={(e, id) => dispatch({type: 'imgSizeMousemove', state: {event: e, elId: id}})}
             onImgSizeMouseup={(e, id) => dispatch({type: 'imgSizeMouseup', state: {event: e, elId: id}})} 
           />
+
+          {/* 文本元素 */}
+          <CanvasTextCom />
         </div>
       </div>
 
@@ -214,7 +223,7 @@ export default () => {
         <div className='contorl-panel-items'>
 
           {/* 画布属性控制面板 */}
-          {
+          {/* {
             state.pageCheckedType === 'none' ?
               <CanvasControlCom
                 color={state.canvasBacColor}
@@ -227,22 +236,45 @@ export default () => {
                 // state 传入错误提示info
                 onErrorInfoChange={(val: string) => dispatch({type: 'errorInfo', state: {errorInfo: val}})}
               /> : null
-          }
+          } */}
 
           {/* 图片元素控制面板 */}
           {
             state.pageCheckedType === 'image' ?
               <CanvasControlImgCom
                 activeImgObject={state.activeElement}
-                onimgElementFormChange={(val: Partial<ImgElementStyleType>) => dispatch({
-                  type: 'imgElementForm',
+                onImgElementFormRotateChange={(val: imgFormValueType) => dispatch({
+                  type: 'imgElementFormRotate',
                   state: {
-                    imgFormValue: val,
+                    imgFormValue: val
+                  }
+                })}
+                onImgElementFormIsEditChange={(val: boolean) => dispatch({
+                  type: 'imgElementFormIsEdit',
+                  state: {
+                    isAllowEdit: val
+                  }
+                })}
+                onImgElementPositionTopLeftChange={(val: PositionTopLeftType) => dispatch({
+                  type: 'imgElementPositionTopLeft',
+                  state: {
+                    formValue: val
+                  }
+                })}
+                onImgElementHieghtWidthChange={(val: any) => dispatch({
+                  type: 'imgElementHieghtWidth',
+                  state: {
+                    formVal: {
+                      ...val
+                    }
                   }
                 })}
               /> : null
           }
-          
+          {
+            state.pageCheckedType === 'none' ?
+              <CanvasControlTextCom /> : null
+          }
         </div>
       </div>
     </div>

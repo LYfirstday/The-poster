@@ -1,7 +1,7 @@
-export const rotateValueFilter = (val: string): number => {
+export const rotateValueFilter = (val: string): string => {
   let arr = val.split('(');
   let arr2 = arr[1].split(')');
-  return parseInt(arr2[0])
+  return `${parseInt(arr2[0])}`;
 }
 
 export const oppositeRotateValueFilter = (val: string): number => {

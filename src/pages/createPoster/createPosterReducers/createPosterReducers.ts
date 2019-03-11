@@ -34,7 +34,11 @@ export type ActionType = 'bacColor'    // 画布背景色板cahnge事件action
                        | 'imgSizeMousedown'    // 图片元素右下角改变图片大小的鼠标按下事件action
                        | 'imgSizeMousemove'    // 图片元素右下角改变图片大小的鼠标移动事件action
                        | 'imgSizeMouseup'      // 图片元素右下角改变图片大小的鼠标弹起事件action
-                       | 'imgElementForm'      // 图片元素表单元素值change事件action
+                       | 'imgElementFormRotate'     // 图片元素表单元素值change事件action --- 角度变化
+                       | 'imgElementFormIsEdit'     // 图片元素表单元素值change事件action --- 是否可编辑变化
+                       | 'imgElementPositionTopLeft'    // 图片元素表单元素值change事件action --- 位置、层级变化
+                       | 'imgElementHieghtWidth'    // 图片元素表单元素值change事件action --- 宽高变化
+                       | 'pageElementChange'    // 页面选中元素改变 PageCheckedType
 
 export interface ActionTypeInfo {
   type: ActionType,
@@ -211,47 +215,46 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
       let imgWidth = parseInt(thisImgSizeMove.elementStyles.width);
       // 当前鼠标移动时和mousedowen记录的位置 差值
       // Y轴差值
-      let diffDisY = disYSize - eventSizeMove.clientY;
+      let diffDisY = eventSizeMove.clientY - disYSize;
       // X轴差值
-      let diffDisX = disXSize - eventSizeMove.clientX;
-
+      let diffDisX = eventSizeMove.clientX - disXSize;
+      // console.log(diffDisY, diffDisX)
       // 设置图片大小
       // 图片宽、高 = 旧的宽、高值 - 鼠标移动的距离
       // 将图片以中心视为坐标轴，分四个象限，右下角控制宽高按钮在不同象限设置宽高数据不同
-      let rotateDeg:number = rotateValueFilter(thisImgSizeMove.outerElementStyles.transform);
+      // 图片旋转的角度
+      let rotateDeg: number = parseInt(rotateValueFilter(thisImgSizeMove.outerElementStyles.transform));
 
-      // 在第一象限时 X轴的差值等于元素高度变化值；Y轴的差值等于元素宽度变化值
-      if (rotateDeg < -45 && rotateDeg >= -135) {
-        thisImgSizeMove.elementStyles.width = `${imgHieght - diffDisY}px`;
-        thisImgSizeMove.elementStyles.height = `${imgWidth - diffDisX}px`;
+      // 获取图片第一在坐标系第一象限x轴临界值角度
+      let rotateValue: number = Math.round(Math.atan(imgHieght/imgWidth) / (Math.PI / 180));
+
+      // 在第一象限时 X轴增大，图片高度增大；Y轴增大，图片宽度减小
+      if (rotateDeg <= -rotateValue && rotateDeg >= -(90 + rotateValue)) {
+        thisImgSizeMove.elementStyles.width = `${imgWidth + (disYSize - eventSizeMove.clientY)}px`;
+        thisImgSizeMove.elementStyles.height = `${imgHieght + diffDisX}px`;
       }
 
-      // 在第二象限时 Y轴的差值等于元素高度变化值，X轴的差值等于元素宽度变化值
-      if (rotateDeg >= -45 && rotateDeg <= 45) {
-        thisImgSizeMove.elementStyles.height = `${imgHieght - diffDisY}px`;
-        thisImgSizeMove.elementStyles.width = `${imgWidth - diffDisX}px`;
+      // 在第二象限时 X轴增大，图片宽度增大；Y轴增大，图片高度增大
+      if (rotateDeg > -rotateValue && rotateDeg < (90 - rotateValue)) {
+        thisImgSizeMove.elementStyles.height = `${imgHieght + diffDisY}px`;
+        thisImgSizeMove.elementStyles.width = `${imgWidth + diffDisX}px`;
       }
 
-      // 在第三象限时
-      if (rotateDeg > 45 && rotateDeg <= 135) {
-
+      // 在第三象限时  Y轴增大，图片宽度增大；X轴增大，图片高度减小
+      if (rotateDeg >= (90 - rotateValue) && rotateDeg <= (90 + rotateValue)) {
+        thisImgSizeMove.elementStyles.width = `${imgWidth + (eventSizeMove.clientY - disYSize)}px`;
+        thisImgSizeMove.elementStyles.height = `${imgHieght + (disXSize - eventSizeMove.clientX)}px`;
       }
 
-      // 在第四象限时
-      if ((rotateDeg > 135 && rotateDeg <= 180) || (rotateDeg < -135 && rotateDeg >= -180)) {
-
+      // 在第四象限时  X轴增大，图片宽度减小；Y轴增大，图片高度增大
+      if ((rotateDeg > (90 + rotateValue) && rotateDeg <= 180) || (rotateDeg < -(90 + rotateValue) && rotateDeg >= -180)) {
+        thisImgSizeMove.elementStyles.height = `${imgHieght + (disYSize - eventSizeMove.clientY)}px`;
+        thisImgSizeMove.elementStyles.width = `${imgWidth + (disXSize - eventSizeMove.clientX)}px`;
       }
 
       // !!! 因为要给高、宽赋值，所以每次计算差值都要从最新的鼠标位置计算，将最新的event事件鼠标的位置重新赋值给dis
       thisImgSizeMove.distanceX = eventSizeMove.clientX;
       thisImgSizeMove.distanceY = eventSizeMove.clientY;
-
-      console.log('-------------')
-      console.log(Math.round(Math.atan(imgHieght/imgWidth) / (Math.PI / 180)))
-      // console.log(rotateValueFilter(thisImgSizeMove.outerElementStyles.transform))
-      // console.log(disXSize, disYSize)
-      // console.log(eventSizeMove.clientX, eventSizeMove.clientY);
-      // console.log(disXSize - eventSizeMove.clientX, disYSize - eventSizeMove.clientY);
 
       return {
         ...state,
@@ -276,8 +279,8 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
           ...listImgsUpSize,
         ]
       };
-    case 'imgElementForm':
-      // 获取state中的该元素 isChecked为true
+    case 'imgElementFormRotate':
+      // 获取state中的该元素 isChecked为true(当触发mousedown事件时，isChecked为true),所以提交的form表单为选中的元素
       let elementList = state.imgsArrayList;
       let thisElement = elementList.filter(val => {
         return val.isChecked === true;
@@ -291,6 +294,78 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         imgsArrayList: [
           ...elementList
         ]
+      };
+    case 'imgElementFormIsEdit':
+        let elementListIsEdit = state.imgsArrayList;
+        let thisElementIsEdit = elementListIsEdit.filter(val => {
+          return val.isChecked === true;
+        })[0];
+        thisElementIsEdit.isAllowEdit = action.state.isAllowEdit;
+      return {
+        ...state,
+        imgsArrayList: [
+          ...elementListIsEdit
+        ]
+      }
+    case 'imgElementPositionTopLeft':
+        let elementListIsPositonTopLeft = state.imgsArrayList;
+        let thisElementIsPositonTopLeft = elementListIsPositonTopLeft.filter(val => {
+          return val.isChecked === true;
+        })[0];
+        let {
+          top,
+          left,
+          zIndex
+        } = action.state.formValue;
+        // 页面状态数需要加上px，表单不需要px
+        thisElementIsPositonTopLeft.outerElementStyles = {
+          ...thisElementIsPositonTopLeft.outerElementStyles,
+          ...action.state.formValue,
+          top: `${parseInt(top)}px`,
+          left: `${parseInt(left)}px`,
+        };
+        thisElementIsPositonTopLeft.elementStyles = {
+          ...thisElementIsPositonTopLeft.elementStyles,
+          top: `${parseInt(top) + 20}px`,
+          left: `${parseInt(left) + 20}px`,
+          zIndex: zIndex
+        };
+      return {
+        ...state,
+        imgsArrayList: [
+          ...elementListIsPositonTopLeft
+        ]
+      }
+    case 'imgElementHieghtWidth':
+        let elementListHeightWidth = state.imgsArrayList;
+        let thisElementListHeightWidth = elementListHeightWidth.filter(val => {
+          return val.isChecked === true;
+        })[0];
+        let {
+          height,
+          width
+        } = action.state.formVal;
+        // 页面状态数需要加上px，表单不需要px
+        thisElementListHeightWidth.elementStyles.height = `${height}px`;
+        thisElementListHeightWidth.elementStyles.width = `${width}px`;
+      return {
+        ...state,
+        imgsArrayList: [
+          ...elementListHeightWidth
+        ]
+      };
+    case 'pageElementChange':
+      let typeValue = action.state.value;
+      let pageChangeList = state.imgsArrayList;
+      pageChangeList.map(val => {
+        val.isChecked = false;
+      })
+      return {
+        ...state,
+        imgsArrayList: [
+          ...pageChangeList
+        ],
+        pageCheckedType: typeValue
       };
     default:
       return state;
