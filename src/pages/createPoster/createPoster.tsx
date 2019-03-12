@@ -1,13 +1,12 @@
 import * as React from 'react';
 import './createPoster.less';
-// import CanvasControlCom from './canvasControlCom';
-import { ControlPanelListType } from './poster';
+import CanvasControlCom from './canvasControlCom';
+import { ControlPanelListType, FontStyleImgType } from './poster';
 import CanvasControlImgCom, { imgFormValueType, PositionTopLeftType } from './canvasControlImgCom';
 import { CanvasPageState, CanvasPageReducer } from './createPosterReducers/createPosterReducers';
 import CanvasImgCom from './canvasImgCom';
 import CanvasTextCom from './canvasTextCom';
 import CanvasControlTextCom from './canvasControlTextCom';
-
 
 // 控制板右边浮动菜单
 const controlPanelListInfo: ControlPanelListType[] = [
@@ -18,47 +17,92 @@ const controlPanelListInfo: ControlPanelListType[] = [
   },
   {
     label: '加文字',
-    imgUrl: require('./../../static/imgs/add-img.png'),
+    imgUrl: require('./../../static/imgs/add-text.png'),
     isActive: false,
   },
   {
     label: '撤回',
-    imgUrl: require('./../../static/imgs/add-img.png'),
+    imgUrl: require('./../../static/imgs/get-back.png'),
     isActive: false,
   },
   {
     label: '保存',
-    imgUrl: require('./../../static/imgs/add-img.png'),
+    imgUrl: require('./../../static/imgs/save.png'),
     isActive: false,
+  },
+];
+// 文本元素下面图片按钮列表
+const fontStyleImgList: FontStyleImgType[] = [
+  {
+    isChecked: false,
+    alt: '加粗',
+    src: require('./../../static/imgs/overstriking.png'),
+    type: 'fontWeight',
+    value: 600
+  },
+  {
+    isChecked: false,
+    alt: '下划线',
+    src: require('./../../static/imgs/underline.png'),
+    type: 'textDecoration',
+    value: 'underline'
+  },
+  {
+    isChecked: false,
+    alt: '斜体',
+    src: require('./../../static/imgs/italic.png'),
+    type: 'fontStyle',
+    value: 'italic'
+  },
+  {
+    isChecked: true,
+    alt: '居左',
+    src: require('./../../static/imgs/text-algin-left.png'),
+    type: 'textAlign',
+    value: 'left'
+  },
+  {
+    isChecked: false,
+    alt: '居中',
+    src: require('./../../static/imgs/text-algin-center.png'),
+    type: 'textAlign',
+    value: 'center'
+  },
+  {
+    isChecked: false,
+    alt: '居右',
+    src: require('./../../static/imgs/text-algin-right.png'),
+    type: 'textAlign',
+    value: 'right'
   },
 ];
 
 // 页面初始状态
-const pageInitState: CanvasPageState = {
+export const pageInitState: CanvasPageState = {
   pageStepState: [],  // 存储页面每次修改的状态(不包括和画布无关的操作状态)
   imgsArrayList: [  // 储存画布图片元素数组
-    // {
-    //   elementType: 'image',
-    //   id: 'image1234',
-    //   isChecked: false,
-    //   imgUrl: require('./../../static/imgs/login-inner.png'),
-    //   elementStyles: {
-    //     height: '150px',
-    //     width: '150px',
-    //     top: '290px',
-    //     left: '130px',
-    //     zIndex: 1
-    //   },
-    //   outerElementStyles: {
-    //     top: '270px',
-    //     left: '110px',
-    //     zIndex: 1,
-    //     transform: 'rotate(0)',
-    //   },
-    //   isAllowEdit: false,
-    //   distanceY: 0,
-    //   distanceX: 0
-    // },
+    {
+      elementType: 'image',
+      id: 'image1234',
+      isChecked: false,
+      imgUrl: require('./../../static/imgs/login-inner.png'),
+      elementStyles: {
+        height: '150px',
+        width: '150px',
+        top: '290px',
+        left: '130px',
+        zIndex: 1
+      },
+      outerElementStyles: {
+        top: '270px',
+        left: '110px',
+        zIndex: 1,
+        transform: 'rotate(0)',
+      },
+      isAllowEdit: false,
+      distanceY: 0,
+      distanceX: 0
+    },
     // {
     //   elementType: 'image',
     //   id: 'image125534',
@@ -81,6 +125,37 @@ const pageInitState: CanvasPageState = {
     //   distanceY: 0,
     //   distanceX: 0
     // }
+  ],
+  textArrayList: [
+    {
+      textElementOuterType: {
+        transform: 'rotate(0)',
+        top: '270px',
+        left: '55px',
+        zIndex: 1,
+      },
+      textElementInnerType: {
+        fontFamily: '',
+        fontSize: '14px',
+        fontWeight: 500,
+        textDecoration: 'none',
+        fontStyle: '',
+        textAlign: 'left',
+        top: '290px',
+        left: '75px',
+        height: '21px',
+        width: '300px',
+        zIndex: 1,
+      },
+      content: '666阿斯达大神大神大神大神',
+      isChecked: false,
+      elementType: 'text',
+      id: 'text123',
+      isAllowEdit: false,
+      distanceY: 0,
+      distanceX: 0,
+      fontStyleImgList: fontStyleImgList
+    }
   ],
   title: '画布属性',
   canvasBacColor: '#ffffff',
@@ -122,6 +197,7 @@ export default () => {
     }
   }, []);
 
+  // 监听页面激活元素类型，显示不同属性面板，当点击空白处显示none，画布的控制面板
   function pageEventListener() {
     let el = event!.target as HTMLElement;
     if (el.classList.contains('create-poster-left') || el.classList.contains('poster-canvas')) {
@@ -169,7 +245,15 @@ export default () => {
           />
 
           {/* 文本元素 */}
-          <CanvasTextCom />
+          <CanvasTextCom
+            textArrayList={state.textArrayList}
+            onTextComMousedown={(e, id, offsetTop, offsetLeft) => dispatch({type: 'textMousedown', state: {event: e, id: id, offsetTop: offsetTop, offsetLeft: offsetLeft}})}
+            onTextComMousemove={(e, id) => dispatch({type: 'textMousemove', state: {event: e, id: id}})}
+            onTextComMouseup={(e, id) => dispatch({type: 'textMouseup', state: {event: e, id: id}})}
+            onTextComSizeMousedown={(e, id) => dispatch({type: 'textSizeMousedown', state: {event: e, id: id}})}
+            onTextComSizeMousemove={(e, id) => dispatch({type: 'textSizeMousemove', state: {event: e, id: id}})}
+            onTextComSizeMouseup={(e, id) => dispatch({type: 'textSizeMouseup', state: {event: e, id: id}})}
+          />
         </div>
       </div>
 
@@ -223,7 +307,7 @@ export default () => {
         <div className='contorl-panel-items'>
 
           {/* 画布属性控制面板 */}
-          {/* {
+          {
             state.pageCheckedType === 'none' ?
               <CanvasControlCom
                 color={state.canvasBacColor}
@@ -236,7 +320,7 @@ export default () => {
                 // state 传入错误提示info
                 onErrorInfoChange={(val: string) => dispatch({type: 'errorInfo', state: {errorInfo: val}})}
               /> : null
-          } */}
+          }
 
           {/* 图片元素控制面板 */}
           {
@@ -272,8 +356,12 @@ export default () => {
               /> : null
           }
           {
-            state.pageCheckedType === 'none' ?
-              <CanvasControlTextCom /> : null
+            state.pageCheckedType === 'text' ?
+              <CanvasControlTextCom
+                activeElement={state.activeElement}
+                onTopLeftZIndexChange={val => dispatch({type: 'textFormTopLeftZIndex', state: {val: val}})}
+                onTextComFormItemChange={(val, type, value) => dispatch({type: 'textFormItemChange', state: {val: val, type: type, value: value}})}
+              /> : null
           }
         </div>
       </div>

@@ -23,7 +23,6 @@ export interface ControlImgComPropsType {
 }
 
 const CanvasControlImgCom = (props: ControlImgComPropsType) => {
-
   // 错误提示信息
   const [errorInfo, setErrorInfo] = React.useState('');
 

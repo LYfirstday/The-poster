@@ -1,4 +1,4 @@
-import { ControlPanelListType, ImgElementType } from './../poster';
+import { ControlPanelListType, ImgElementType, TextComStyleType } from './../poster';
 
 // 当前页面选中元素状态，none:无选中元素，控制面板显示画板控制；image:选中图片元素，控制面
 // 板显示图片控制面板；text：文本元素被选中;默认为none
@@ -9,6 +9,7 @@ import { rotateValueFilter } from './../../../static/ts/tools';
 export interface CanvasPageState {
   pageStepState: object[],  // 保存画布数据相关每步操作状态，用与撤回操作，只保存数据相关改动操作，不保存ui变化操作
   imgsArrayList: ImgElementType[],    // 保存图片元素的数组
+  textArrayList: TextComStyleType[],   // 保存文本元素的数组
   title: string,
   canvasBacColor: string,    // 画布背景颜色
   canvasBacInputValue: string,    // 用户输入的背景色值
@@ -16,7 +17,7 @@ export interface CanvasPageState {
   canvasBacImgUrl?: string,  // 保存上传至服务器的背景图地址
   canvasBackground: string,  // 将背景图地址放入style中
   controlPanelListInfo: ControlPanelListType[],  // 右侧浮动菜单列表
-  activeElement: ImgElementType | {},
+  activeElement: ImgElementType | TextComStyleType | {},
   pageCheckedType: PageCheckedType
 }
 
@@ -39,6 +40,17 @@ export type ActionType = 'bacColor'    // 画布背景色板cahnge事件action
                        | 'imgElementPositionTopLeft'    // 图片元素表单元素值change事件action --- 位置、层级变化
                        | 'imgElementHieghtWidth'    // 图片元素表单元素值change事件action --- 宽高变化
                        | 'pageElementChange'    // 页面选中元素改变 PageCheckedType
+                       // ==================文本元素action type
+                       | 'fontFamily'
+                       | 'fontSize'
+                       | 'textMousedown'    // 改变文本元素位置时鼠标事件
+                       | 'textMousemove'
+                       | 'textMouseup'
+                       | 'textSizeMousedown'    // 改变文本元素大小时鼠标事件
+                       | 'textSizeMousemove'
+                       | 'textSizeMouseup'
+                       | 'textFormTopLeftZIndex'    // 文本元素Top Left ZIndex三个属性表单变化时的action
+                       | 'textFormItemChange'   // 文本元素自有属性表单值变化时的action
 
 export interface ActionTypeInfo {
   type: ActionType,
@@ -47,6 +59,7 @@ export interface ActionTypeInfo {
 
 export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo) => {
   switch (action.type) {
+    // 画布样式action================================================begin
     case 'bacColor':
       return {
         ...state,
@@ -64,6 +77,9 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
       };
     case 'bacImgUrl':
       return state;
+    // 画布样式action================================================end
+
+    // 右侧浮动菜单action================================================begin
     case 'floatMenu':
       let list = state.controlPanelListInfo;
       list.map((val, i) => {
@@ -85,6 +101,9 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
       return {
         ...state
       }
+    // 右侧浮动菜单action================================================end
+
+    // 图片元素action================================================begin
     case 'imgMousedown':
       // 获取当前选中元素的clientY、clientX, 元素id
       let event = action.state.event;
@@ -104,6 +123,9 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         } else {
           val.isChecked = false;
         }
+      })
+      state.textArrayList.map(val => {
+        val.isChecked = false;
       })
       
       return {
@@ -186,6 +208,9 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         } else {
           val.isChecked = false;
         }
+      })
+      state.textArrayList.map(val => {
+        val.isChecked = false;
       })
 
       return {
@@ -354,19 +379,311 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
           ...elementListHeightWidth
         ]
       };
+    // 点击页面空白处，图片元素和文本元素取消选中状态
     case 'pageElementChange':
       let typeValue = action.state.value;
-      let pageChangeList = state.imgsArrayList;
-      pageChangeList.map(val => {
+      let pageChangeListImgs = state.imgsArrayList;
+      let pageChangeListText = state.textArrayList;
+      pageChangeListImgs.map(val => {
+        val.isChecked = false;
+      })
+      pageChangeListText.map(val => {
         val.isChecked = false;
       })
       return {
         ...state,
         imgsArrayList: [
-          ...pageChangeList
+          ...pageChangeListImgs
         ],
-        pageCheckedType: typeValue
+        textArrayList: [
+          ...pageChangeListText
+        ],
+        pageCheckedType: typeValue,
+        title: '画布属性'
       };
+    // 图片元素action================================================end
+
+    // 文本元素action==============================================================begin
+    case 'textMousedown':
+      // 获取当前选中元素的clientY、clientX, 元素id
+      let eventText = action.state.event;
+      let distanceYTextDown = eventText.clientY - action.state.offsetTop;
+      let distanceXTextDown = eventText.clientX - action.state.offsetLeft;
+      let elIdText = action.state.id;
+      // 获取state中的该元素
+      let listText = state.textArrayList;
+      let thisTextDown = listText.filter(val => {
+        return elIdText === val.id;
+      })[0];
+      listText.map(val => {
+        if (elIdText === val.id) {
+          val.distanceY = distanceYTextDown;
+          val.distanceX = distanceXTextDown;
+          val.isChecked = true;
+        } else {
+          val.isChecked = false;
+        }
+      })
+      state.imgsArrayList.map(val => {
+        val.isChecked = false;
+      })
+      return {
+        ...state,
+        pageCheckedType: 'text',
+        title: '文本属性',
+        activeElement: thisTextDown,
+        textArrayList: [
+          ...listText
+        ],
+      }
+    case 'textMousemove':
+      let eventTextMove = action.state.event;
+      // 获取该元素的id
+      let moveTextId = action.state.id;
+      // 获取state中的该元素
+      let listTextMove = state.textArrayList;
+      let thisTextMove = listTextMove.filter(val => {
+        return moveTextId === val.id;
+      })[0];
+      let disYTextMove = thisTextMove.distanceY;
+      let disXTextMove = thisTextMove.distanceX;
+      let topTextMove = `${eventTextMove.clientY - disYTextMove}px`;
+      let leftTextMove = `${eventTextMove.clientX - disXTextMove}px`;
+      // 设置外部容器的top left值
+      thisTextMove.textElementOuterType.top = topTextMove;
+      thisTextMove.textElementOuterType.left = leftTextMove;
+      // 设置图片实际位置，因为外部容器的padding为20，所以加20
+      thisTextMove.textElementInnerType.top = `${parseInt(topTextMove) + 20}px`;
+      thisTextMove.textElementInnerType.left = `${parseInt(leftTextMove) + 20}px`;
+      return {
+        ...state,
+        textArrayList: [
+          ...listTextMove
+        ]
+      }
+    case 'textMouseup':
+      let upTextId = action.state.id;
+      let listTextUp = state.textArrayList;
+      let thisTextUp = listTextUp.filter(val => {
+        return upTextId === val.id;
+      })[0];
+      thisTextUp.distanceY = 0;
+      thisTextUp.distanceX = 0;
+      return {
+        ...state,
+        textArrayList: [
+          ...listTextUp
+        ]
+      }
+    case 'textSizeMousedown':
+      // 获取当前选中元素的clientY、clientX, 元素id
+      let eventTextSize = action.state.event;
+      let textSizeId = action.state.id;
+      // 获取state中的该元素
+      let listTextSize = state.textArrayList;
+
+      let thisTextSize = listTextSize.filter(val => {
+        return textSizeId === val.id;
+      })[0];
+      listTextSize.map(val => {
+        if (textSizeId === val.id) {
+          val.distanceY = eventTextSize.clientY;
+          val.distanceX = eventTextSize.clientX;
+          val.isChecked = true;
+        } else {
+          val.isChecked = false;
+        }
+      })
+      state.imgsArrayList.map(val => {
+        val.isChecked = false;
+      })
+      return {
+        ...state,
+        pageCheckedType: 'text',
+        title: '文本属性',
+        textArrayList: [
+          ...listTextSize
+        ],
+        activeElement: thisTextSize
+      }
+    case 'textSizeMousemove':
+      let eventTextSizeMove = action.state.event;
+      // 获取该元素的id
+      let textSizeMoveId = action.state.id;
+      // 获取state中的该元素
+      let listTextSizeMove = state.textArrayList;
+      let thisTextSizeMove = listTextSizeMove.filter(val => {
+        return textSizeMoveId === val.id;
+      })[0];
+
+      // 鼠标mousedown时记录的位置
+      let disYTextSize = thisTextSizeMove.distanceY;
+      let disXTextSize = thisTextSizeMove.distanceX;
+      // 当前图片宽高
+      let textHieght = parseInt(thisTextSizeMove.textElementInnerType.height);
+      let textWidth = parseInt(thisTextSizeMove.textElementInnerType.width);
+      // 当前鼠标移动时和mousedowen记录的位置 差值
+      // Y轴差值
+      let diffTextDisY = eventTextSizeMove.clientY - disYTextSize;
+      // X轴差值
+      let diffTextDisX = eventTextSizeMove.clientX - disXTextSize;
+      // console.log(diffDisY, diffDisX)
+      // 设置图片大小
+      // 图片宽、高 = 旧的宽、高值 - 鼠标移动的距离
+      // 将图片以中心视为坐标轴，分四个象限，右下角控制宽高按钮在不同象限设置宽高数据不同
+      // 图片旋转的角度
+      let rotateDegText: number = parseInt(rotateValueFilter(thisTextSizeMove.textElementOuterType.transform));
+
+      // 获取图片第一在坐标系第一象限x轴临界值角度
+      let rotateValueText: number = Math.round(Math.atan(textHieght/textWidth) / (Math.PI / 180));
+
+      // 在第一象限时 X轴增大，图片高度增大；Y轴增大，图片宽度减小
+      if (rotateDegText <= -rotateValueText && rotateDegText >= -(90 + rotateValueText)) {
+        thisTextSizeMove.textElementInnerType.width = `${textWidth + (disYTextSize - eventTextSizeMove.clientY)}px`;
+        thisTextSizeMove.textElementInnerType.height = `${textHieght + diffTextDisX}px`;
+      }
+
+      // 在第二象限时 X轴增大，图片宽度增大；Y轴增大，图片高度增大
+      if (rotateDegText > -rotateValueText && rotateDegText < (90 - rotateValueText)) {
+        thisTextSizeMove.textElementInnerType.height = `${textHieght + diffTextDisY}px`;
+        thisTextSizeMove.textElementInnerType.width = `${textWidth + diffTextDisX}px`;
+      }
+
+      // 在第三象限时  Y轴增大，图片宽度增大；X轴增大，图片高度减小
+      if (rotateDegText >= (90 - rotateValueText) && rotateDegText <= (90 + rotateValueText)) {
+        thisTextSizeMove.textElementInnerType.width = `${textWidth + (eventTextSizeMove.clientY - disYTextSize)}px`;
+        thisTextSizeMove.textElementInnerType.height = `${textHieght + (disXTextSize - eventTextSizeMove.clientX)}px`;
+      }
+
+      // 在第四象限时  X轴增大，图片宽度减小；Y轴增大，图片高度增大
+      if ((rotateDegText > (90 + rotateValueText) && rotateDegText <= 180) || (rotateDegText < -(90 + rotateValueText) && rotateDegText >= -180)) {
+        thisTextSizeMove.textElementInnerType.height = `${textHieght + (disYTextSize - eventTextSizeMove.clientY)}px`;
+        thisTextSizeMove.textElementInnerType.width = `${textWidth + (disXTextSize - eventTextSizeMove.clientX)}px`;
+      }
+
+      // !!! 因为要给高、宽赋值，所以每次计算差值都要从最新的鼠标位置计算，将最新的event事件鼠标的位置重新赋值给dis
+      thisTextSizeMove.distanceX = eventTextSizeMove.clientX;
+      thisTextSizeMove.distanceY = eventTextSizeMove.clientY;
+      return {
+        ...state,
+        textArrayList: [
+          ...listTextSizeMove
+        ]
+      }
+    case 'textSizeMouseup':
+      let upSizeTextId = action.state.id;
+      let listSizeTextUp = state.textArrayList;
+      let thisSizeTextUp = listSizeTextUp.filter(val => {
+        return upSizeTextId === val.id;
+      })[0];
+      thisSizeTextUp.distanceY = 0;
+      thisSizeTextUp.distanceX = 0;
+
+      return {
+        ...state,
+        textArrayList: [
+          ...listSizeTextUp
+        ]
+      }
+    case 'textFormTopLeftZIndex':
+      let changeValue = action.state.val;
+      let itemChangeEl = state.textArrayList.filter(val => {
+        return val.isChecked === true;
+      })[0];
+      let outerValue = {
+        top: `${parseInt(changeValue.top) - 20}px`,
+        left: `${parseInt(changeValue.left) - 20}px`,
+        zIndex: parseInt(changeValue.zIndex),
+      };
+      let innerValue = {
+        top: `${parseInt(changeValue.top)}px`,
+        left: `${parseInt(changeValue.left)}px`,
+        zIndex: parseInt(changeValue.zIndex),
+      };
+      itemChangeEl.textElementOuterType = {
+        ...itemChangeEl.textElementOuterType,
+        ...outerValue
+      };
+      itemChangeEl.textElementInnerType = {
+        ...itemChangeEl.textElementInnerType,
+        ...innerValue
+      };
+      return {
+        ...state
+      }
+    case 'textFormItemChange':
+      let formItemChangeEl = state.textArrayList.filter(val => {
+        return val.isChecked === true;
+      })[0];
+      // 获取字体属性按钮类型
+      let formItemType = action.state.type;
+      // 获取控制字体属性选中列表
+      let fontStyleImgList = formItemChangeEl.fontStyleImgList;
+      // 当点击的按钮类型为textAlign时，修改按钮激活状态，三个按钮只能有一个处于激活
+      if (formItemType === 'textAlign') {
+        switch (action.state.value) {
+          case 'left':
+            fontStyleImgList[3].isChecked = true;
+            fontStyleImgList[4].isChecked = false;
+            fontStyleImgList[5].isChecked = false;
+            break;
+          case 'center':
+            fontStyleImgList[3].isChecked = false;
+            fontStyleImgList[4].isChecked = true;
+            fontStyleImgList[5].isChecked = false;
+            break;
+          case 'right':
+            fontStyleImgList[3].isChecked = false;
+            fontStyleImgList[4].isChecked = false;
+            fontStyleImgList[5].isChecked = true;
+            break;
+          default:
+            break;
+        }
+        formItemChangeEl.textElementInnerType.textAlign = action.state.value;
+      } else {
+        let activeFontStyle = fontStyleImgList.filter(val => {
+          return val.type === formItemType;
+        })[0];
+        activeFontStyle.isChecked = !activeFontStyle.isChecked;
+        if ((activeFontStyle.isChecked) === false) {
+          switch (formItemType) {
+            case 'fontWeight':
+              formItemChangeEl.textElementInnerType.fontWeight = 500;
+              break;
+            case 'textDecoration':
+              formItemChangeEl.textElementInnerType.textDecoration = 'none';
+              break;
+            case 'fontStyle':
+              formItemChangeEl.textElementInnerType.fontStyle = '';
+              break;
+            default:
+              break;
+          }
+        } else {
+          switch (formItemType) {
+            case 'fontWeight':
+              formItemChangeEl.textElementInnerType.fontWeight = action.state.value;
+              break;
+            case 'textDecoration':
+              formItemChangeEl.textElementInnerType.textDecoration = action.state.value;
+              break;
+            case 'fontStyle':
+              formItemChangeEl.textElementInnerType.fontStyle = action.state.value;
+              break;
+            default:
+              break;
+          }
+        }
+      }
+      formItemChangeEl.textElementInnerType = {
+        ...formItemChangeEl.textElementInnerType,
+      };
+
+      return {
+        ...state
+      }
+    // 文本元素action==============================================================end
     default:
       return state;
   }

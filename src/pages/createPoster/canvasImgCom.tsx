@@ -16,7 +16,7 @@ export interface ImgComPropsType {
 
 const CanvasImgCom = (props: ImgComPropsType) => {
 
-  // 图片元素页面事件监听函数=============================================begin
+  // 图片元素页面移动事件监听函数=============================================begin
   function onImgMousedown(id: string) {
     // mousedown事件记录图片外部容器位置
     event!.stopPropagation();
@@ -35,7 +35,7 @@ const CanvasImgCom = (props: ImgComPropsType) => {
     document.onmousemove = null;
     document.onmouseup = null;
   }
-  // 图片元素页面事件监听函数=============================================end
+  // 图片元素页面移动事件监听函数=============================================end
 
   // 图片元素右下角宽高控制图片事件监听函数===================================begin
   function onImgSizeMousedown(id:string) {
