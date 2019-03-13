@@ -3,12 +3,12 @@ import * as React from 'react';
 import { Button, TextField } from '@material-ui/core';
 
 export interface CanvasComPropsType {
-  color: string,    // 颜色选择器值
+  pageState: any,
   colorValue: string,    // 用户输入的颜色值
   errorInfo: string,    // 用户输入的颜色值不合规时的提示信息
   onColorChange: (v: string) => void,    // 颜色选择器值change事件的dispacth
-  onColorValueChange: (v: string) => void,    // 用户输入的颜色值选择器值change事件的dispacth
   onErrorInfoChange: (v: string) => void,    // 用户输入的颜色值不合规时的提示信息的dispacth
+  onActivityUrlChange: (v: string) => void
 }
 
 export default (props: CanvasComPropsType) => {
@@ -23,7 +23,6 @@ export default (props: CanvasComPropsType) => {
     setBacColor(value);
     setColorValue(value);
     props.onColorChange(value);
-    props.onColorValueChange(value);
   }
 
   // 颜色输入input change事件
@@ -43,8 +42,39 @@ export default (props: CanvasComPropsType) => {
     }
   }
 
+  // 活动页面input change事件
+  const [activityUrl, setActivity] = React.useState('');
+  function onActivityInputChange(e: any) {
+    setActivity(e.target.value);
+  }
+
+  function onActivityInputBlur() {
+    if (activityUrl) {
+      if (!(activityUrl.startsWith('http://') || activityUrl.startsWith('https://'))) {
+        props.onErrorInfoChange('请输入可访问的页面地址;如：http://xxx或https://');
+        return;
+      } else {
+        props.onErrorInfoChange('');
+        props.onActivityUrlChange(activityUrl);
+      }
+    } else {
+      props.onErrorInfoChange('');
+      props.onActivityUrlChange(activityUrl);
+    }
+  }
+
+  React.useEffect(() => {
+    setBacColor(props.pageState.pageState.canvasBacInputValue);
+    setColorValue(props.pageState.pageState.canvasBacInputValue);
+    setActivity(`${props.pageState.pageState.activityPageUrl}`);
+  }, [
+    props.pageState.pageState.canvasBacInputValue, 
+    props.pageState.pageState.activityPageUrl
+  ])
+
   return (
     <>
+     <span className='error-info'>{props.errorInfo}</span>
       <div className='item'>
         <span className='item-title'>画布尺寸:</span>
         <p className='item-content'>414px * 736px</p>
@@ -67,15 +97,15 @@ export default (props: CanvasComPropsType) => {
           value={colorValue}
           onChange={(e) => onColorValueChange(e)}
         />
-        <span className='tips'>{props.errorInfo}</span>
       </div>
       <div className='item'>
         <span className='item-title'>活动页面:</span>
         <TextField
           label="请输入可访问url地址"
-          type='password'
-          // value={account.password}
-          // onChange={(e) => setAccount({userName: account.userName, password: e.target.value})}
+          type='text'
+          value={activityUrl}
+          onChange={(e) => onActivityInputChange(e)}
+          onBlur={onActivityInputBlur}
           margin="normal"
           className='item-activity-input'
         />

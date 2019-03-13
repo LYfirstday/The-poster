@@ -7,27 +7,33 @@ import { rotateValueFilter } from './../../../static/ts/tools';
 
 // 整个画板页面状态树
 export interface CanvasPageState {
-  pageStepState: object[],  // 保存画布数据相关每步操作状态，用与撤回操作，只保存数据相关改动操作，不保存ui变化操作
-  imgsArrayList: ImgElementType[],    // 保存图片元素的数组
-  textArrayList: TextComStyleType[],   // 保存文本元素的数组
-  title: string,
-  canvasBacColor: string,    // 画布背景颜色
-  canvasBacInputValue: string,    // 用户输入的背景色值
-  errorInfo: string,    // 提示错误信息
-  canvasBacImgUrl?: string,  // 保存上传至服务器的背景图地址
-  canvasBackground: string,  // 将背景图地址放入style中
-  controlPanelListInfo: ControlPanelListType[],  // 右侧浮动菜单列表
-  activeElement: ImgElementType | TextComStyleType | {},
-  pageCheckedType: PageCheckedType
+  // 保存画布数据相关每步操作状态，用于撤回操作，只保存数据相关改动操作，不保存ui变化操作
+  // 图片和文本元素在移动过程中，保存mouseup时的状态，mousemove不保存;size改变一样，mouseups时保存状态
+  pageStepState: object[],
+  pageState: {
+    imgsArrayList: ImgElementType[],    // 保存图片元素的数组
+    textArrayList: TextComStyleType[],   // 保存文本元素的数组
+    title: string,
+    canvasBacInputValue: string,    // 用户输入的背景色值
+    errorInfo: string,    // 提示错误信息
+    canvasBacImgUrl?: string,  // 保存上传至服务器的背景图地址
+    canvasBackground: string,  // 将背景图地址放入style中
+    controlPanelListInfo: ControlPanelListType[],  // 右侧浮动菜单列表
+    activeElement: ImgElementType | TextComStyleType | {},
+    pageCheckedType: PageCheckedType,
+    activityPageUrl: string,    // 活动页面
+  }
 }
 
 // action type
 export type ActionType = 'bacColor'    // 画布背景色板cahnge事件action
-                       | 'bacColorValue'    // 用户输入背景色change事件action
                        | 'errorInfo'    // 输入错误背景色错误提示事件action
                        | 'bacImgUrl'    // 上传背景色图片事件action
                        | 'floatMenu'    // 右侧浮动菜单change事件action
                        | 'addImgElement'    // 添加图片元素事件
+                       | 'activityUrl'    // 添加活动页面
+
+                       // ===========================图片元素action type
                        | 'imgMousedown'    // 图片元素鼠标按下事件action
                        | 'imgMousemove'    // 图片元素鼠标移动事件action
                        | 'imgMouseup'      // 图片元素鼠标弹起事件action
@@ -40,7 +46,8 @@ export type ActionType = 'bacColor'    // 画布背景色板cahnge事件action
                        | 'imgElementPositionTopLeft'    // 图片元素表单元素值change事件action --- 位置、层级变化
                        | 'imgElementHieghtWidth'    // 图片元素表单元素值change事件action --- 宽高变化
                        | 'pageElementChange'    // 页面选中元素改变 PageCheckedType
-                       // ==================文本元素action type
+
+                       // ==============================文本元素action type
                        | 'fontFamily'
                        | 'fontSize'
                        | 'textMousedown'    // 改变文本元素位置时鼠标事件
@@ -60,31 +67,52 @@ export interface ActionTypeInfo {
   state?: any
 }
 
+// 控制初始化页面状态撤回
+// let index = 1;
+
 export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo) => {
+  // index=1时，push页面最初状态
+  // if (index === 1) {
+  //   index = 2;
+  //   state.pageStepState.push(state.pageState);
+  // }
+
   switch (action.type) {
     // 画布样式action================================================begin
     case 'bacColor':
       return {
         ...state,
-        canvasBackground: `url(${state.canvasBacImgUrl}) no-repeat center ${action.state.bacColor}`
-      };
-    case 'bacColorValue':
-      return {
-        ...state,
-        canvasBacInputValue: action.state.bacColorValue
+        pageState: {
+          ...state.pageState,
+          canvasBackground: `url(${state.pageState.canvasBacImgUrl}) no-repeat center ${action.state.bacColor}`,
+          canvasBacInputValue: action.state.bacColor
+        }
       };
     case 'errorInfo':
       return {
         ...state,
-        errorInfo: action.state.errorInfo
+        pageState: {
+          ...state.pageState,
+          errorInfo: action.state.errorInfo
+        }
       };
     case 'bacImgUrl':
-      return state;
+      return {
+        ...state
+      };
+    case 'activityUrl':
+      return {
+        ...state,
+        pageState: {
+          ...state.pageState,
+          activityPageUrl: action.state.val
+        }
+      };
     // 画布样式action================================================end
 
     // 右侧浮动菜单action================================================begin
     case 'floatMenu':
-      let list = state.controlPanelListInfo;
+      let list = state.pageState.controlPanelListInfo;
       list.map((val, i) => {
         val.isActive = action.state.floatMenu === i ? true : false;
       });
@@ -92,12 +120,27 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         case 0:
           return {
             ...state,
-            controlPanelListInfo: list
+            pageState: {
+              ...state.pageState,
+              controlPanelListInfo: list
+            }
+          }
+        case 2:  // 撤回一步
+          let stepList = state.pageStepState;
+          let olderPageState = stepList.splice(stepList.length-2, 1)[0];
+          return {
+            ...state,
+            pageState: {
+              ...state.pageState,
+              ...olderPageState
+            }
           };
         default:
           return {
             ...state,
-            controlPanelListInfo: list
+            pageState: {
+              ...state.pageState,
+            }
           };
       }
     case 'addImgElement':
@@ -114,10 +157,11 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
       let distanceXDown = event.clientX - action.state.offsetLeft;
       let elId = action.state.elId;
       // 获取state中的该元素
-      let listImgs = state.imgsArrayList;
+      let listImgs = state.pageState.imgsArrayList;
       let thisImgDown = listImgs.filter(val => {
         return elId === val.id;
       })[0];
+
       listImgs.map(val => {
         if (elId === val.id) {
           val.distanceY = distanceYDown;
@@ -127,25 +171,28 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
           val.isChecked = false;
         }
       })
-      state.textArrayList.map(val => {
+      state.pageState.textArrayList.map(val => {
         val.isChecked = false;
       })
-      
+
       return {
         ...state,
-        pageCheckedType: 'image',
-        title: '图片属性',
-        activeElement: thisImgDown,
-        imgsArrayList: [
-          ...listImgs
-        ]
-      };
+        pageState: {
+          ...state.pageState,
+          pageCheckedType: 'image',
+          title: '图片属性',
+          activeElement: thisImgDown,
+          imgsArrayList: [
+            ...listImgs
+          ]
+        }
+      };;
     case 'imgMousemove':
       let eventMove = action.state.event;
       // 获取该元素的id
       let elIdMove = action.state.elId;
       // 获取state中的该元素
-      let listImgsMove = state.imgsArrayList;
+      let listImgsMove = state.pageState.imgsArrayList;
       let thisImgMove = listImgsMove.filter(val => {
         return elIdMove === val.id;
       })[0];
@@ -162,15 +209,18 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
 
       return {
         ...state,
-        imgsArrayList: [
-          ...listImgsMove
-        ]
+        pageState: {
+          ...state.pageState,
+          imgsArrayList: [
+            ...listImgsMove
+          ]
+        }
       };
     case 'imgMouseup':
       // 获取该元素的id
       let elIdUp = action.state.elId;
       // 获取state中的该元素
-      let listImgsUp = state.imgsArrayList;
+      let listImgsUp = state.pageState.imgsArrayList;
       let thisImgUp = listImgsUp.filter(val => {
         return elIdUp === val.id;
       })[0];
@@ -179,26 +229,33 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
 
       return {
         ...state,
-        imgsArrayList: [
-          ...listImgsUp,
-        ]
+        pageState: {
+          ...state.pageState,
+          imgsArrayList: [
+            ...listImgsUp,
+          ]
+        }
       };
     case 'deleteImgElement':
-      let delList = state.imgsArrayList;
+      let delList = state.pageState.imgsArrayList;
       let dIndex = action.state.index;
       delList.splice(dIndex, 1);
+
       return {
         ...state,
-        imgsArrayList: [
-          ...delList
-        ]
+        pageState: {
+          ...state.pageState,
+          imgsArrayList: [
+            ...delList
+          ]
+        }
       };
     case 'imgSizeMousedown':
       // 获取当前选中元素的clientY、clientX, 元素id
       let eventSize = action.state.event;
       let elIdSize = action.state.elId;
       // 获取state中的该元素
-      let listImgsSize = state.imgsArrayList;
+      let listImgsSize = state.pageState.imgsArrayList;
 
       let thisImgSize = listImgsSize.filter(val => {
         return elIdSize === val.id;
@@ -212,25 +269,28 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
           val.isChecked = false;
         }
       })
-      state.textArrayList.map(val => {
+      state.pageState.textArrayList.map(val => {
         val.isChecked = false;
       })
 
       return {
         ...state,
-        pageCheckedType: 'image',
-        title: '图片属性',
-        activeElement: thisImgSize,
-        imgsArrayList: [
-          ...listImgsSize
-        ]
+        pageState: {
+          ...state.pageState,
+          pageCheckedType: 'image',
+          title: '图片属性',
+          activeElement: thisImgSize,
+          imgsArrayList: [
+            ...listImgsSize
+          ]
+        }
       };
     case 'imgSizeMousemove':
       let eventSizeMove = action.state.event;
       // 获取该元素的id
       let elIdSizeMove = action.state.elId;
       // 获取state中的该元素
-      let listImgsSizeMove = state.imgsArrayList;
+      let listImgsSizeMove = state.pageState.imgsArrayList;
       let thisImgSizeMove = listImgsSizeMove.filter(val => {
         return elIdSizeMove === val.id;
       })[0];
@@ -286,30 +346,37 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
 
       return {
         ...state,
-        imgsArrayList: [
-          ...listImgsSizeMove
-        ]
+        pageState: {
+          ...state.pageState,
+          imgsArrayList: [
+            ...listImgsSizeMove
+          ]
+        }
       };
     case 'imgSizeMouseup':
       // 获取该元素的id
       let elIdUpSize = action.state.elId;
       // 获取state中的该元素
-      let listImgsUpSize = state.imgsArrayList;
+      let listImgsUpSize = state.pageState.imgsArrayList;
       let thisImgUpSize = listImgsUpSize.filter(val => {
         return elIdUpSize === val.id;
       })[0];
       // 初始化dis值
       thisImgUpSize.distanceY = 0;
       thisImgUpSize.distanceX = 0;
+
       return {
         ...state,
-        imgsArrayList: [
-          ...listImgsUpSize,
-        ]
+        pageState: {
+          ...state.pageState,
+          imgsArrayList: [
+            ...listImgsUpSize
+          ]
+        }
       };
     case 'imgElementFormRotate':
       // 获取state中的该元素 isChecked为true(当触发mousedown事件时，isChecked为true),所以提交的form表单为选中的元素
-      let elementList = state.imgsArrayList;
+      let elementList = state.pageState.imgsArrayList;
       let thisElement = elementList.filter(val => {
         return val.isChecked === true;
       })[0];
@@ -317,92 +384,112 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         ...thisElement.outerElementStyles,
         ...action.state.imgFormValue
       };
+
       return {
         ...state,
-        imgsArrayList: [
-          ...elementList
-        ]
+        pageState: {
+          ...state.pageState,
+          imgsArrayList: [
+            ...elementList
+          ]
+        }
       };
     case 'imgElementFormIsEdit':
-        let elementListIsEdit = state.imgsArrayList;
-        let thisElementIsEdit = elementListIsEdit.filter(val => {
-          return val.isChecked === true;
-        })[0];
-        thisElementIsEdit.isAllowEdit = action.state.isAllowEdit;
+      let elementListIsEdit = state.pageState.imgsArrayList;
+      let thisElementIsEdit = elementListIsEdit.filter(val => {
+        return val.isChecked === true;
+      })[0];
+      thisElementIsEdit.isAllowEdit = action.state.isAllowEdit;
+
       return {
         ...state,
-        imgsArrayList: [
-          ...elementListIsEdit
-        ]
-      }
+        pageState: {
+          ...state.pageState,
+          imgsArrayList: [
+            ...elementListIsEdit
+          ]
+        }
+      };;
     case 'imgElementPositionTopLeft':
-        let elementListIsPositonTopLeft = state.imgsArrayList;
-        let thisElementIsPositonTopLeft = elementListIsPositonTopLeft.filter(val => {
-          return val.isChecked === true;
-        })[0];
-        let {
-          top,
-          left,
-          zIndex
-        } = action.state.formValue;
-        // 页面状态数需要加上px，表单不需要px
-        thisElementIsPositonTopLeft.outerElementStyles = {
-          ...thisElementIsPositonTopLeft.outerElementStyles,
-          ...action.state.formValue,
-          top: `${parseInt(top)}px`,
-          left: `${parseInt(left)}px`,
-        };
-        thisElementIsPositonTopLeft.elementStyles = {
-          ...thisElementIsPositonTopLeft.elementStyles,
-          top: `${parseInt(top) + 20}px`,
-          left: `${parseInt(left) + 20}px`,
-          zIndex: zIndex
-        };
+      let elementListIsPositonTopLeft = state.pageState.imgsArrayList;
+      let thisElementIsPositonTopLeft = elementListIsPositonTopLeft.filter(val => {
+        return val.isChecked === true;
+      })[0];
+      let {
+        top,
+        left,
+        zIndex
+      } = action.state.formValue;
+      // 页面状态数需要加上px，表单不需要px
+      thisElementIsPositonTopLeft.outerElementStyles = {
+        ...thisElementIsPositonTopLeft.outerElementStyles,
+        ...action.state.formValue,
+        top: `${parseInt(top)}px`,
+        left: `${parseInt(left)}px`,
+      };
+      thisElementIsPositonTopLeft.elementStyles = {
+        ...thisElementIsPositonTopLeft.elementStyles,
+        top: `${parseInt(top) + 20}px`,
+        left: `${parseInt(left) + 20}px`,
+        zIndex: zIndex
+      };
+
       return {
         ...state,
-        imgsArrayList: [
-          ...elementListIsPositonTopLeft
-        ]
-      }
+        pageState: {
+          ...state.pageState,
+          imgsArrayList: [
+            ...elementListIsPositonTopLeft
+          ]
+        }
+      };
     case 'imgElementHieghtWidth':
-        let elementListHeightWidth = state.imgsArrayList;
-        let thisElementListHeightWidth = elementListHeightWidth.filter(val => {
-          return val.isChecked === true;
-        })[0];
-        let {
-          height,
-          width
-        } = action.state.formVal;
-        // 页面状态数需要加上px，表单不需要px
-        thisElementListHeightWidth.elementStyles.height = `${height}px`;
-        thisElementListHeightWidth.elementStyles.width = `${width}px`;
+      let elementListHeightWidth = state.pageState.imgsArrayList;
+      let thisElementListHeightWidth = elementListHeightWidth.filter(val => {
+        return val.isChecked === true;
+      })[0];
+      let {
+        height,
+        width
+      } = action.state.formVal;
+      // 页面状态数需要加上px，表单不需要px
+      thisElementListHeightWidth.elementStyles.height = `${height}px`;
+      thisElementListHeightWidth.elementStyles.width = `${width}px`;
+
       return {
         ...state,
-        imgsArrayList: [
-          ...elementListHeightWidth
-        ]
+        pageState: {
+          ...state.pageState,
+          imgsArrayList: [
+            ...elementListHeightWidth
+          ]
+        }
       };
     // 点击页面空白处，图片元素和文本元素取消选中状态
     case 'pageElementChange':
       let typeValue = action.state.value;
-      let pageChangeListImgs = state.imgsArrayList;
-      let pageChangeListText = state.textArrayList;
+      let pageChangeListImgs = state.pageState.imgsArrayList;
+      let pageChangeListText = state.pageState.textArrayList;
       pageChangeListImgs.map(val => {
         val.isChecked = false;
       })
       pageChangeListText.map(val => {
         val.isChecked = false;
       })
+
       return {
         ...state,
-        imgsArrayList: [
-          ...pageChangeListImgs
-        ],
-        textArrayList: [
-          ...pageChangeListText
-        ],
-        pageCheckedType: typeValue,
-        title: '画布属性'
+        pageState: {
+          ...state.pageState,
+          imgsArrayList: [
+            ...pageChangeListImgs
+          ],
+          textArrayList: [
+            ...pageChangeListText
+          ],
+          pageCheckedType: typeValue,
+          title: '画布属性'
+        }
       };
     // 图片元素action================================================end
 
@@ -414,7 +501,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
       let distanceXTextDown = eventText.clientX - action.state.offsetLeft;
       let elIdText = action.state.id;
       // 获取state中的该元素
-      let listText = state.textArrayList;
+      let listText = state.pageState.textArrayList;
       let thisTextDown = listText.filter(val => {
         return elIdText === val.id;
       })[0];
@@ -427,24 +514,28 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
           val.isChecked = false;
         }
       })
-      state.imgsArrayList.map(val => {
+      state.pageState.imgsArrayList.map(val => {
         val.isChecked = false;
       })
+
       return {
         ...state,
-        pageCheckedType: 'text',
-        title: '文本属性',
-        activeElement: thisTextDown,
-        textArrayList: [
-          ...listText
-        ],
-      }
+        pageState: {
+          ...state.pageState,
+          pageCheckedType: 'text',
+          title: '文本属性',
+          activeElement: thisTextDown,
+          textArrayList: [
+            ...listText
+          ],
+        }
+      };
     case 'textMousemove':
       let eventTextMove = action.state.event;
       // 获取该元素的id
       let moveTextId = action.state.id;
       // 获取state中的该元素
-      let listTextMove = state.textArrayList;
+      let listTextMove = state.pageState.textArrayList;
       let thisTextMove = listTextMove.filter(val => {
         return moveTextId === val.id;
       })[0];
@@ -458,32 +549,40 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
       // 设置图片实际位置，因为外部容器的padding为20，所以加20
       thisTextMove.textElementInnerType.top = `${parseInt(topTextMove) + 20}px`;
       thisTextMove.textElementInnerType.left = `${parseInt(leftTextMove) + 20}px`;
+
       return {
         ...state,
-        textArrayList: [
-          ...listTextMove
-        ]
-      }
+        pageState: {
+          ...state.pageState,
+          textArrayList: [
+            ...listTextMove
+          ]
+        }
+      };
     case 'textMouseup':
       let upTextId = action.state.id;
-      let listTextUp = state.textArrayList;
+      let listTextUp = state.pageState.textArrayList;
       let thisTextUp = listTextUp.filter(val => {
         return upTextId === val.id;
       })[0];
       thisTextUp.distanceY = 0;
       thisTextUp.distanceX = 0;
+
       return {
         ...state,
-        textArrayList: [
-          ...listTextUp
-        ]
-      }
+        pageState: {
+          ...state.pageState,
+          textArrayList: [
+            ...listTextUp
+          ]
+        }
+      };
     case 'textSizeMousedown':
       // 获取当前选中元素的clientY、clientX, 元素id
       let eventTextSize = action.state.event;
       let textSizeId = action.state.id;
       // 获取state中的该元素
-      let listTextSize = state.textArrayList;
+      let listTextSize = state.pageState.textArrayList;
 
       let thisTextSize = listTextSize.filter(val => {
         return textSizeId === val.id;
@@ -497,24 +596,28 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
           val.isChecked = false;
         }
       })
-      state.imgsArrayList.map(val => {
+      state.pageState.imgsArrayList.map(val => {
         val.isChecked = false;
       })
+
       return {
         ...state,
-        pageCheckedType: 'text',
-        title: '文本属性',
-        textArrayList: [
-          ...listTextSize
-        ],
-        activeElement: thisTextSize
-      }
+        pageState: {
+          ...state.pageState,
+          pageCheckedType: 'text',
+          title: '文本属性',
+          textArrayList: [
+            ...listTextSize
+          ],
+          activeElement: thisTextSize
+        }
+      };
     case 'textSizeMousemove':
       let eventTextSizeMove = action.state.event;
       // 获取该元素的id
       let textSizeMoveId = action.state.id;
       // 获取state中的该元素
-      let listTextSizeMove = state.textArrayList;
+      let listTextSizeMove = state.pageState.textArrayList;
       let thisTextSizeMove = listTextSizeMove.filter(val => {
         return textSizeMoveId === val.id;
       })[0];
@@ -567,15 +670,19 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
       // !!! 因为要给高、宽赋值，所以每次计算差值都要从最新的鼠标位置计算，将最新的event事件鼠标的位置重新赋值给dis
       thisTextSizeMove.distanceX = eventTextSizeMove.clientX;
       thisTextSizeMove.distanceY = eventTextSizeMove.clientY;
+
       return {
         ...state,
-        textArrayList: [
-          ...listTextSizeMove
-        ]
-      }
+        pageState: {
+          ...state.pageState,
+          textArrayList: [
+            ...listTextSizeMove
+          ]
+        }
+      };
     case 'textSizeMouseup':
       let upSizeTextId = action.state.id;
-      let listSizeTextUp = state.textArrayList;
+      let listSizeTextUp = state.pageState.textArrayList;
       let thisSizeTextUp = listSizeTextUp.filter(val => {
         return upSizeTextId === val.id;
       })[0];
@@ -584,13 +691,17 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
 
       return {
         ...state,
-        textArrayList: [
-          ...listSizeTextUp
-        ]
-      }
+        pageState: {
+          ...state.pageState,
+          textArrayList: [
+            ...listSizeTextUp
+          ]
+        }
+      };
     case 'textFormTopLeftZIndex':
       let changeValue = action.state.val;
-      let itemChangeEl = state.textArrayList.filter(val => {
+      let itemChangeElZindexList = state.pageState.textArrayList;
+      let itemChangeEl = itemChangeElZindexList.filter(val => {
         return val.isChecked === true;
       })[0];
       let outerValue = {
@@ -611,11 +722,19 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         ...itemChangeEl.textElementInnerType,
         ...innerValue
       };
+
       return {
-        ...state
-      }
+        ...state,
+        pageState: {
+          ...state.pageState,
+          textArrayList: [
+            ...itemChangeElZindexList
+          ]
+        }
+      };
     case 'textFormItemChange':
-      let formItemChangeEl = state.textArrayList.filter(val => {
+      let formItemList = state.pageState.textArrayList;
+      let formItemChangeEl = formItemList.filter(val => {
         return val.isChecked === true;
       })[0];
       // 获取字体属性按钮类型
@@ -645,13 +764,13 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
             break;
         }
         formItemChangeEl.textElementInnerType.textAlign = action.state.value;
-      } else if ('height' === formItemType || 'width' === formItemType) {
-        formItemChangeEl.textElementInnerType[formItemType] = `${action.state.value}px`;
+      } else if ('height' === formItemType || 'width' === formItemType || 'color' === formItemType) {
+        formItemChangeEl.textElementInnerType[formItemType] = formItemType === 'color' ? action.state.value : `${action.state.value}px`;
       } else {
         let activeFontStyle = fontStyleImgList.filter(val => {
           return val.type === formItemType;
         })[0];
-
+        // 如果按钮即将设为false，未激活状态，则将样式取消
         activeFontStyle.isChecked = !activeFontStyle.isChecked;
         if ((activeFontStyle.isChecked) === false) {
           switch (formItemType) {
@@ -676,45 +795,64 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
       };
 
       return {
-        ...state
-      }
+        ...state,
+        pageState: {
+          ...state.pageState,
+          textArrayList: [
+            ...formItemList
+          ]
+        }
+      };
     case 'textComFontSizeFontFamily':
-        let fontStyleList = state.textArrayList;
-        let fontStyleChangeEl = fontStyleList.filter(val => {
-          return val.isChecked === true;
-        })[0];
-        let fontStyleType = action.state.type;
-        fontStyleChangeEl.textElementInnerType[fontStyleType] = action.state.value;
-        return { 
-          ...state,
+      let fontStyleList = state.pageState.textArrayList;
+      let fontStyleChangeEl = fontStyleList.filter(val => {
+        return val.isChecked === true;
+      })[0];
+      let fontStyleType = action.state.type;
+      fontStyleChangeEl.textElementInnerType[fontStyleType] = action.state.value;
+
+      return {
+        ...state,
+        pageState: {
+          ...state.pageState,
           textArrayList: [
             ...fontStyleList
           ]
         }
+      };
     case 'allowTextComEdited':
-      let canEditedList = state.textArrayList;
+      let canEditedList = state.pageState.textArrayList;
       let canEditedEl = canEditedList.filter(val => {
         return val.isChecked === true;
       })[0];
       canEditedEl.isAllowEdit = !canEditedEl.isAllowEdit;
+
       return {
         ...state,
-        textArrayList: [
-          ...canEditedList
-        ]
-      }
+        pageState: {
+          ...state.pageState,
+          textArrayList: [
+            ...canEditedList
+          ]
+        }
+      };
     case 'textComTramsformChange':
-      let transformList = state.textArrayList;
+      let transformList = state.pageState.textArrayList;
       let transformEl = transformList.filter(val => {
         return val.isChecked === true;
       })[0];
       transformEl.textElementOuterType.transform = action.state.value;
+
       return {
         ...state,
-        textArrayList: [
-          ...transformList
-        ]
-      }
+        pageState: {
+          ...state.pageState,
+          textArrayList: [
+            ...transformList,
+            transformEl
+          ]
+        }
+      };
     // 文本元素action==============================================================end
     default:
       return state;

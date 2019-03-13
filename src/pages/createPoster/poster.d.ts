@@ -78,7 +78,8 @@ export interface TextElementInnerType {
   left: string,
   height: string,
   width: string,
-  zIndex: number
+  zIndex: number,
+  color: string
 }
 
 // 整个文本元素样式类型

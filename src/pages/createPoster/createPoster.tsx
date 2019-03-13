@@ -21,7 +21,7 @@ const controlPanelListInfo: ControlPanelListType[] = [
     isActive: false,
   },
   {
-    label: '撤回',
+    label: '预览',
     imgUrl: require('./../../static/imgs/get-back.png'),
     isActive: false,
   },
@@ -79,93 +79,96 @@ const fontStyleImgList: FontStyleImgType[] = [
 
 // 页面初始状态
 export const pageInitState: CanvasPageState = {
-  pageStepState: [],  // 存储页面每次修改的状态(不包括和画布无关的操作状态)
-  imgsArrayList: [  // 储存画布图片元素数组
-    {
-      elementType: 'image',
-      id: 'image1234',
-      isChecked: false,
-      imgUrl: require('./../../static/imgs/login-inner.png'),
-      elementStyles: {
-        height: '150px',
-        width: '150px',
-        top: '290px',
-        left: '130px',
-        zIndex: 1
+  pageStepState: [],
+  pageState: {
+    imgsArrayList: [  // 储存画布图片元素数组
+      {
+        elementType: 'image',
+        id: 'image1234',
+        isChecked: false,
+        imgUrl: require('./../../static/imgs/login-inner.png'),
+        elementStyles: {
+          height: '150px',
+          width: '150px',
+          top: '290px',
+          left: '130px',
+          zIndex: 1
+        },
+        outerElementStyles: {
+          top: '270px',
+          left: '110px',
+          zIndex: 1,
+          transform: 'rotate(0)',
+        },
+        isAllowEdit: false,
+        distanceY: 0,
+        distanceX: 0
       },
-      outerElementStyles: {
-        top: '270px',
-        left: '110px',
-        zIndex: 1,
-        transform: 'rotate(0)',
-      },
-      isAllowEdit: false,
-      distanceY: 0,
-      distanceX: 0
-    },
-    // {
-    //   elementType: 'image',
-    //   id: 'image125534',
-    //   isChecked: false,
-    //   imgUrl: require('./../../static/imgs/login-inner.png'),
-    //   elementStyles: {
-    //     height: '100px',
-    //     width: '60px',
-    //     top: '70px',
-    //     left: '56px',
-    //     zIndex: 1
-    //   },
-    //   outerElementStyles: {
-    //     top: '50px',
-    //     left: '36px',
-    //     zIndex: 1,
-    //     transform: 'rotate(0)',
-    //   },
-    //   isAllowEdit: false,
-    //   distanceY: 0,
-    //   distanceX: 0
-    // }
-  ],
-  textArrayList: [
-    {
-      textElementOuterType: {
-        transform: 'rotate(0)',
-        top: '270px',
-        left: '55px',
-        zIndex: 1,
-      },
-      textElementInnerType: {
-        fontFamily: '',
-        fontSize: '14px',
-        fontWeight: 500,
-        textDecoration: 'none',
-        fontStyle: '',
-        textAlign: 'left',
-        top: '290px',
-        left: '75px',
-        height: '21px',
-        width: '300px',
-        zIndex: 1,
-      },
-      content: '666阿斯达大神大神大神大神',
-      isChecked: false,
-      elementType: 'text',
-      id: 'text123',
-      isAllowEdit: false,
-      distanceY: 0,
-      distanceX: 0,
-      fontStyleImgList: fontStyleImgList
-    }
-  ],
-  title: '画布属性',
-  canvasBacColor: '#ffffff',
-  canvasBacInputValue: '#ffffff',
-  errorInfo: '',
-  canvasBacImgUrl: '',
-  canvasBackground: `url('') no-repeat center #fff`,
-  controlPanelListInfo: controlPanelListInfo,
-  activeElement: {},
-  pageCheckedType: 'none'
+      // {
+      //   elementType: 'image',
+      //   id: 'image125534',
+      //   isChecked: false,
+      //   imgUrl: require('./../../static/imgs/login-inner.png'),
+      //   elementStyles: {
+      //     height: '100px',
+      //     width: '60px',
+      //     top: '70px',
+      //     left: '56px',
+      //     zIndex: 1
+      //   },
+      //   outerElementStyles: {
+      //     top: '50px',
+      //     left: '36px',
+      //     zIndex: 1,
+      //     transform: 'rotate(0)',
+      //   },
+      //   isAllowEdit: false,
+      //   distanceY: 0,
+      //   distanceX: 0
+      // }
+    ],
+    textArrayList: [
+      {
+        textElementOuterType: {
+          transform: 'rotate(0)',
+          top: '270px',
+          left: '55px',
+          zIndex: 1,
+        },
+        textElementInnerType: {
+          fontFamily: '',
+          fontSize: '14px',
+          fontWeight: 500,
+          textDecoration: 'none',
+          fontStyle: '',
+          textAlign: 'left',
+          top: '290px',
+          left: '75px',
+          height: '21px',
+          width: '300px',
+          zIndex: 1,
+          color: '#111111'
+        },
+        content: '666阿斯达大神大神大神大神',
+        isChecked: false,
+        elementType: 'text',
+        id: 'text123',
+        isAllowEdit: false,
+        distanceY: 0,
+        distanceX: 0,
+        fontStyleImgList: fontStyleImgList
+      }
+    ],
+    title: '画布属性',
+    canvasBacInputValue: '#ffffff',
+    errorInfo: '',
+    canvasBacImgUrl: '',
+    canvasBackground: `url('') no-repeat center #fff`,
+    controlPanelListInfo: controlPanelListInfo,
+    activeElement: {},
+    pageCheckedType: 'none',
+    activityPageUrl: ''
+  }
 };
 
 export default () => {
@@ -201,8 +204,19 @@ export default () => {
     let el = event!.target as HTMLElement;
     if (el.classList.contains('create-poster-left') || el.classList.contains('poster-canvas')) {
       dispatch({ type: 'pageElementChange', state: {value: 'none'} });
+      dispatch({type: 'errorInfo', state: {errorInfo: ''}})
     }
   }
+
+  // 撤回操作点击事件
+  // function onGoBackClick() {
+  //   console.log(state.pageStepState)
+  //   if (state.pageStepState.length <= 1) {
+  //     dispatch({type: 'errorInfo', state: {errorInfo: '已经到底啦~'}});
+  //     return;
+  //   }
+  //   dispatch({type: 'floatMenu', state: {floatMenu: 2}});
+  // }
 
   return (
     <div className='create-poster' id='createPoster'>
@@ -210,12 +224,12 @@ export default () => {
         {/* 左侧画板 */}
         <div
           className='poster-canvas'
-          style={{background: state.canvasBackground}}
+          style={{background: state.pageState.canvasBackground}}
           onClick={(e) => e.stopPropagation()}
         >
           {/* 图片元素属性控制面板 */}
           <CanvasImgCom
-            imgsArrayList={state.imgsArrayList}
+            imgsArrayList={state.pageState.imgsArrayList}
             onImgMousedown={(e, id, offsetTop, offsetLeft) => 
                             dispatch({      // 组件向action中传入event、当前选中元素id、元素本身的offsetTop offsetLeft值
                               type: 'imgMousedown', 
@@ -245,7 +259,7 @@ export default () => {
 
           {/* 文本元素 */}
           <CanvasTextCom
-            textArrayList={state.textArrayList}
+            textArrayList={state.pageState.textArrayList}
             onTextComMousedown={(e, id, offsetTop, offsetLeft) => dispatch({type: 'textMousedown', state: {event: e, id: id, offsetTop: offsetTop, offsetLeft: offsetLeft}})}
             onTextComMousemove={(e, id) => dispatch({type: 'textMousemove', state: {event: e, id: id}})}
             onTextComMouseup={(e, id) => dispatch({type: 'textMouseup', state: {event: e, id: id}})}
@@ -262,11 +276,11 @@ export default () => {
         {/* 操作浮动面板 */}
         <div className='contorl-panel-right-float'>
           <div
-            className={state.controlPanelListInfo[0].isActive ? 'contorl-item contorl-item-active' : 'contorl-item'}
+            className={state.pageState.controlPanelListInfo[0].isActive ? 'contorl-item contorl-item-active' : 'contorl-item'}
             
           >
-            <img src={state.controlPanelListInfo[0].imgUrl} />
-            <span>{state.controlPanelListInfo[0].label}</span>
+            <img src={state.pageState.controlPanelListInfo[0].imgUrl} />
+            <span>{state.pageState.controlPanelListInfo[0].label}</span>
             <input
               type='file'
               className='add-img-com'
@@ -275,57 +289,57 @@ export default () => {
           </div>
           <p className='nav'></p>
           <div
-            className={state.controlPanelListInfo[1].isActive ? 'contorl-item contorl-item-active' : 'contorl-item'}
+            className={state.pageState.controlPanelListInfo[1].isActive ? 'contorl-item contorl-item-active' : 'contorl-item'}
             onClick={() => dispatch({type: 'floatMenu', state: {floatMenu: 1}})}
           >
-            <img src={state.controlPanelListInfo[1].imgUrl} />
-            <span>{state.controlPanelListInfo[1].label}</span>
+            <img src={state.pageState.controlPanelListInfo[1].imgUrl} />
+            <span>{state.pageState.controlPanelListInfo[1].label}</span>
           </div>
           <p className='nav'></p>
           <div
-            className={state.controlPanelListInfo[2].isActive ? 'contorl-item contorl-item-active' : 'contorl-item'}
-            onClick={() => dispatch({type: 'floatMenu', state: {floatMenu: 2}})}
+            className={state.pageState.controlPanelListInfo[2].isActive ? 'contorl-item contorl-item-active' : 'contorl-item'}
+            // onClick={onGoBackClick}
           >
-            <img src={state.controlPanelListInfo[2].imgUrl} />
-            <span>{state.controlPanelListInfo[2].label}</span>
+            <img src={state.pageState.controlPanelListInfo[2].imgUrl} />
+            <span>{state.pageState.controlPanelListInfo[2].label}</span>
           </div>
           <p className='nav'></p>
           <div
-            className={state.controlPanelListInfo[3].isActive ? 'contorl-item contorl-item-active' : 'contorl-item'}
+            className={state.pageState.controlPanelListInfo[3].isActive ? 'contorl-item contorl-item-active' : 'contorl-item'}
             onClick={() => dispatch({type: 'floatMenu', state: {floatMenu: 3}})}
           >
-            <img src={state.controlPanelListInfo[3].imgUrl} />
-            <span>{state.controlPanelListInfo[3].label}</span>
+            <img src={state.pageState.controlPanelListInfo[3].imgUrl} />
+            <span>{state.pageState.controlPanelListInfo[3].label}</span>
           </div>
         </div>
 
         {/* 画布title */}
-        <p className='contorl-panel-title'>{state.title}</p>
+        <p className='contorl-panel-title'>{state.pageState.title}</p>
 
         {/* 画布基本元素各项选择控件 */}
         <div className='contorl-panel-items'>
 
           {/* 画布属性控制面板 */}
           {
-            state.pageCheckedType === 'none' ?
+            state.pageState.pageCheckedType === 'none' ?
               <CanvasControlCom
-                color={state.canvasBacColor}
-                colorValue={state.canvasBacInputValue}
-                errorInfo={state.errorInfo}
+                pageState={state}
+                colorValue={state.pageState.canvasBacInputValue}
+                errorInfo={state.pageState.errorInfo}
                 // state 传入改变后的颜色值
                 onColorChange={(val: string) => dispatch({type: 'bacColor', state: {bacColor: val}})}
-                // state 传入改变后的颜色值
-                onColorValueChange={(val: string) => dispatch({type: 'bacColorValue', state: {bacColorValue: val}})}
                 // state 传入错误提示info
                 onErrorInfoChange={(val: string) => dispatch({type: 'errorInfo', state: {errorInfo: val}})}
+                onActivityUrlChange={(v) => dispatch({type: 'activityUrl', state: {val: v}})}
               /> : null
           }
 
           {/* 图片元素控制面板 */}
           {
-            state.pageCheckedType === 'image' ?
+            state.pageState.pageCheckedType === 'image' ?
               <CanvasControlImgCom
-                activeImgObject={state.activeElement}
+                pageState={state}
+                activeImgObject={state.pageState.activeElement}
                 onImgElementFormRotateChange={(val: imgFormValueType) => dispatch({
                   type: 'imgElementFormRotate',
                   state: {
@@ -355,11 +369,11 @@ export default () => {
               /> : null
           }
           {
-            state.pageCheckedType === 'text' ?
+            state.pageState.pageCheckedType === 'text' ?
               <CanvasControlTextCom
-                activeElement={state.activeElement}
+                activeElement={state.pageState.activeElement}
                 onTopLeftZIndexChange={val => dispatch({type: 'textFormTopLeftZIndex', state: {val: val}})}
-                onTextComFormItemChange={(val, type, value) => dispatch({type: 'textFormItemChange', state: {val: val, type: type, value: value}})}
+                onTextComFormItemChange={(type, value) => dispatch({type: 'textFormItemChange', state: {type: type, value: value}})}
                 onFontSizeFontFamilyChange={(type, value) => dispatch({type: 'textComFontSizeFontFamily', state: {type: type, value: value}})}
                 onAllowEditedChange={() => dispatch({type: 'allowTextComEdited'})}
                 onTransformChange={(type, value) => dispatch({type: 'textComTramsformChange', state: {type: type, value: value}})}

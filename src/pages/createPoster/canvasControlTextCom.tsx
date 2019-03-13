@@ -8,7 +8,7 @@ import { rotateValueFilter, oppositeRotateValueFilter } from './../../static/ts/
 export interface ControlTextPropsType {
   activeElement: any,
   onTopLeftZIndexChange: (val: any) => void,
-  onTextComFormItemChange: (val: any, type: string, value: string | number) => void,
+  onTextComFormItemChange: (type: string, value: string | number) => void,
   onFontSizeFontFamilyChange: (type: string, value: string) => void
   onAllowEditedChange: () => void,
   onTransformChange: (type: string, value: string) => void,  // type: input还是slider;value: 数值
@@ -105,6 +105,30 @@ const fontSize: FontSizeFontFamilyType[] = [
     value: '36px',
     label: '36px'
   },
+  {
+    value: '40px',
+    label: '40px'
+  },
+  {
+    value: '44px',
+    label: '44px'
+  },
+  {
+    value: '48px',
+    label: '48px'
+  },
+  {
+    value: '52px',
+    label: '52px'
+  },
+  {
+    value: '56px',
+    label: '56px'
+  },
+  {
+    value: '60px',
+    label: '60px'
+  },
 ];
 
 export default (props: ControlTextPropsType) => {
@@ -155,10 +179,7 @@ export default (props: ControlTextPropsType) => {
       [type]: val
     });
     if (!(type === 'height' || type === 'width')) {
-      props.onTextComFormItemChange({
-        ...textComFormItem,
-        [type]: val
-      }, type, val);
+      props.onTextComFormItemChange(type, val);
     }
   }
 
@@ -172,11 +193,7 @@ export default (props: ControlTextPropsType) => {
         setErrorInfo('');
       }
     }
-    let newValue = {
-      ...textComFormItem,
-      [type]: type === 'height' || type === 'width' ? `${thisValue}px` : thisValue
-    };
-    props.onTextComFormItemChange(newValue, type, thisValue);
+    props.onTextComFormItemChange(type, thisValue);
   }
 
   React.useEffect(() => {
@@ -195,6 +212,8 @@ export default (props: ControlTextPropsType) => {
     });
     setTransform(`${rotateValueFilter(props.activeElement.textElementOuterType.transform)}`);
     setRotate(oppositeRotateValueFilter(props.activeElement.textElementOuterType.transform));
+    setTextInputColor(props.activeElement.textElementInnerType.color);
+    setTextColor(props.activeElement.textElementInnerType.color);
   },[
     props.activeElement.textElementInnerType.top,
     props.activeElement.textElementInnerType.left,
@@ -207,6 +226,7 @@ export default (props: ControlTextPropsType) => {
     props.activeElement.textElementInnerType.width,
     props.activeElement.textElementInnerType.textAlign,
     props.activeElement.textElementInnerType.textDecoration,
+    props.activeElement.textElementInnerType.color,
     props.activeElement.textElementOuterType.transform
   ]);
 
@@ -244,6 +264,35 @@ export default (props: ControlTextPropsType) => {
     props.onTransformChange(type, rotate);
   }
   
+  // 调色板input change事件
+  const [textInputColor, setTextInputColor] = React.useState(props.activeElement.textElementInnerType.color);
+
+  function onTextInputColorChange(e: any) {
+    setTextInputColor(e.target.value);
+    setTextColor(e.target.value);
+    props.onTextComFormItemChange('color', e.target.value);
+    setErrorInfo('');
+  }
+  // 文本颜色input change事件
+  const [textColor, setTextColor] = React.useState('#111111')
+
+  function onTextColroChange(e: any) {
+    setTextColor(e.target.value);
+  }
+
+  function onTextColroBlur() {
+    if (textColor.length === 7) {
+      if (textColor.startsWith('#')) {
+        props.onTextComFormItemChange('color', textColor);
+        setErrorInfo('');
+      } else {
+        setErrorInfo('请输入正确的颜色值,以#开头 + 6位颜色值');
+      }
+    } else {
+      setErrorInfo('请输入正确的颜色值,以#开头 + 6位颜色值');
+    }
+  }
+
   return (
     <>
       <p className='error-info'>{errorInfo}</p>
@@ -290,12 +339,15 @@ export default (props: ControlTextPropsType) => {
         <input
           type='color'
           className='color-input'
+          value={textInputColor}
+          onChange={(e) => onTextInputColorChange(e)}
         />
         <input
           className='color-value-input'
           type='text'
-          // value={colorValue}
-          // onChange={(e) => onColorValueChange(e)}
+          value={textColor}
+          onChange={(e) => onTextColroChange(e)}
+          onBlur={onTextColroBlur}
         />
       </div>
       <div className='item'>

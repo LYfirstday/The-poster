@@ -5,6 +5,7 @@ import Slider from '@material-ui/lab/Slider';
 import { rotateValueFilter, oppositeRotateValueFilter } from './../../static/ts/tools';
 import { Switch } from '@material-ui/core';
 import { ImgElementStyleType, ImgOuterElementStyleType } from './poster';
+import { CanvasPageState } from './createPosterReducers/createPosterReducers';
 
 export type imgFormValueType = Partial<ImgElementStyleType> | Partial<ImgOuterElementStyleType> | {isAllowEdit: boolean};
 
@@ -20,6 +21,7 @@ export interface ControlImgComPropsType {
   onImgElementPositionTopLeftChange: (val: PositionTopLeftType) => void,
   onImgElementHieghtWidthChange: (val: any) => void
   activeImgObject: any,
+  pageState: CanvasPageState
 }
 
 const CanvasControlImgCom = (props: ControlImgComPropsType) => {
