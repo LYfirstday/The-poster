@@ -9,7 +9,7 @@ const OptimizeCSSASSETPlugin = require('optimize-css-assets-webpack-plugin');
 const tsImportPluginFactory = require('ts-import-plugin');
 // development   production
 module.exports = {
-  mode: 'production',
+  mode: 'development',
   entry: {
     main: './src/index.tsx',
   },

@@ -3,12 +3,109 @@ import * as React from 'react';
 import './canvasControlImgCom.less';
 import { Select, MenuItem, InputLabel, FormControl, Switch } from '@material-ui/core';
 import Slider from '@material-ui/lab/Slider';
+import { rotateValueFilter, oppositeRotateValueFilter } from './../../static/ts/tools';
 
 export interface ControlTextPropsType {
   activeElement: any,
   onTopLeftZIndexChange: (val: any) => void,
-  onTextComFormItemChange: (val: any, type: string, value: string | number) => void
+  onTextComFormItemChange: (val: any, type: string, value: string | number) => void,
+  onFontSizeFontFamilyChange: (type: string, value: string) => void
+  onAllowEditedChange: () => void,
+  onTransformChange: (type: string, value: string) => void,  // type: input还是slider;value: 数值
 }
+
+export type FontSizeFontFamilyType = {
+  value: string,
+  label: string
+}
+
+// 文本字体
+const fontFamily: FontSizeFontFamilyType[] = [
+  {
+    value: '日本水面字',
+    label: '日本水面字'
+  },
+  {
+    value: '一纸情书',
+    label: '一纸情书'
+  },
+  {
+    value: '海派腔调禅大黑简',
+    label: '海派腔调禅大黑简'
+  },
+  {
+    value: 'jmlangmanmeigonggjm',
+    label: 'jmlangmanmeigonggjm'
+  },
+  {
+    value: '汉仪秀英体繁',
+    label: '汉仪秀英体繁'
+  },
+  {
+    value: '钟齐李洤标准草书符号',
+    label: '钟齐李洤标准草书符号'
+  },
+  {
+    value: '毛泽东字体',
+    label: '毛泽东字体'
+  },
+  {
+    value: '春联标准行书体',
+    label: '春联标准行书体'
+  },
+  {
+    value: '叶根友毛笔行书',
+    label: '叶根友毛笔行书'
+  },
+  {
+    value: '方圆诗书体',
+    label: '方圆诗书体'
+  },
+];
+
+// 文字字号
+const fontSize: FontSizeFontFamilyType[] = [
+  {
+    value: '8px',
+    label: '8px'
+  },
+  {
+    value: '12px',
+    label: '12px'
+  },
+  {
+    value: '14px',
+    label: '14px'
+  },
+  {
+    value: '16px',
+    label: '16px'
+  },
+  {
+    value: '18px',
+    label: '18px'
+  },
+  {
+    value: '20px',
+    label: '20px'
+  },
+  {
+    value: '24px',
+    label: '24px'
+  },
+  {
+    value: '28px',
+    label: '28px'
+  },
+  {
+    value: '32px',
+    label: '32px'
+  },
+  {
+    value: '36px',
+    label: '36px'
+  },
+];
 
 export default (props: ControlTextPropsType) => {
   // 错误信息
@@ -96,6 +193,8 @@ export default (props: ControlTextPropsType) => {
       textAlign: props.activeElement.textElementInnerType.textAlign,
       textDecoration: props.activeElement.textElementInnerType.textDecoration,
     });
+    setTransform(`${rotateValueFilter(props.activeElement.textElementOuterType.transform)}`);
+    setRotate(oppositeRotateValueFilter(props.activeElement.textElementOuterType.transform));
   },[
     props.activeElement.textElementInnerType.top,
     props.activeElement.textElementInnerType.left,
@@ -108,11 +207,41 @@ export default (props: ControlTextPropsType) => {
     props.activeElement.textElementInnerType.width,
     props.activeElement.textElementInnerType.textAlign,
     props.activeElement.textElementInnerType.textDecoration,
+    props.activeElement.textElementOuterType.transform
   ]);
 
   // 字体、字号change事件
-  function onFontSizeFontFamilyChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    console.log(e.target)
+  function onFontSizeFontFamilyChange(type: string, e: React.ChangeEvent<HTMLSelectElement>) {
+    props.onFontSizeFontFamilyChange(type, e.target.value);
+  }
+
+  // 文本元素旋转change事件，rotate style在外部容器上
+  const [transform, setTransform] = React.useState(`${rotateValueFilter(props.activeElement.textElementOuterType.transform)}`);
+
+  // 旋转角度input事件
+  function onTextComRotateChange(type: string, value: string) {
+    setTransform(value);
+  }
+  // input blur
+  function onTextComRotateBlur() {
+    if (parseInt(transform) > 180 || parseInt(transform) < -180) {
+      setErrorInfo('请输入-180 到 180之间的数字');
+      return;
+    } else {
+      setErrorInfo('');
+    }
+    props.onTransformChange('input', `rotate(${transform}deg)`);
+  }
+
+  // 旋转角度滑块事件
+  const [rotate, setRotate] = React.useState(oppositeRotateValueFilter(props.activeElement.textElementOuterType.transform));
+
+  function onSliderRotateChange(type: string, val: number) {
+    // 将滑块在50值中的比例换算到180中，得出角度数值
+    let rotateValue = (50 - val)/50 * 180;
+    let rotate = `rotate(${rotateValue}deg)`;
+    setRotate(val);
+    props.onTransformChange(type, rotate);
   }
   
   return (
@@ -121,36 +250,53 @@ export default (props: ControlTextPropsType) => {
       <div className='item'>
         <span className='item-title'>文字字体:</span>
         <FormControl style={{width: '50%'}}>
-          <InputLabel htmlFor="age-simple">请选择字体</InputLabel>
+          <InputLabel htmlFor="age-simple">选择字体</InputLabel>
           <Select
-            value={''}
-            onChange={(e) => onFontSizeFontFamilyChange(e)}
+            value={props.activeElement.textElementInnerType.fontFamily}
+            onChange={(e) => onFontSizeFontFamilyChange('fontFamily', e)}
           >
-            <MenuItem value="">
+            <MenuItem value='none'>
               <em>系统默认字体</em>
             </MenuItem>
-            <MenuItem value={'Ten'}>Ten</MenuItem>
-            <MenuItem value={'Twenty'}>Twenty</MenuItem>
-            <MenuItem value={'Thirty'}>Thirty</MenuItem>
+            {
+              fontFamily.map((val, i) =>
+                <MenuItem value={val.value} key={`${i}_${val.value}`}>{val.label}</MenuItem>
+              )
+            }
           </Select>
         </FormControl>
       </div>
       <div className='item'>
         <span className='item-title'>文字字号:</span>
         <FormControl style={{width: '50%'}}>
-          <InputLabel htmlFor="age-simple">请选择文字字号</InputLabel>
+          <InputLabel htmlFor="age-simple">选择文字字号</InputLabel>
           <Select
-            value={20}
-            onChange={onFontSizeFontFamilyChange}
+            value={props.activeElement.textElementInnerType.fontSize}
+            onChange={(e) => onFontSizeFontFamilyChange('fontSize', e)}
           >
-            <MenuItem value="">
-              <em>None</em>
+            <MenuItem value=''>
+              <em>默认14px</em>
             </MenuItem>
-            <MenuItem value={10}>Ten</MenuItem>
-            <MenuItem value={20}>Twenty</MenuItem>
-            <MenuItem value={30}>Thirty</MenuItem>
+            {
+              fontSize.map((val, i) =>
+                <MenuItem value={val.value} key={`${i}_${val.value}`}>{val.label}</MenuItem>
+              )
+            }
           </Select>
         </FormControl>
+      </div>
+      <div className='item'>
+        <span className='item-title'>文本颜色:</span>
+        <input
+          type='color'
+          className='color-input'
+        />
+        <input
+          className='color-value-input'
+          type='text'
+          // value={colorValue}
+          // onChange={(e) => onColorValueChange(e)}
+        />
       </div>
       <div className='item'>
         <span className='item-title'>文本区域大小:</span>
@@ -191,15 +337,15 @@ export default (props: ControlTextPropsType) => {
         <input
           className='img-com-input-rotate'
           type='text'
-          // onChange={(e) => onRotateChangeInputChange(e.target.value)}
-          // onBlur={(e) => onRotateChangeInputBlur()}
+          onChange={(e) => onTextComRotateChange('transform', e.target.value)}
+          onBlur={onTextComRotateBlur}
           style={{width: '3rem', marginRight: '.5rem'}}
-          value={`${50}`}
+          value={`${transform}`}
         />°
         <Slider
-          value={50}
+          value={rotate}
           aria-labelledby="label"
-          // onChange={(e, val) => onRotateChange('transform', val)}
+          onChange={(e, val) => onSliderRotateChange('slider', val)}
         />
       </div>
       <div className='item'>
@@ -217,7 +363,7 @@ export default (props: ControlTextPropsType) => {
         <Switch
           value='check'
           color="primary"
-          // onChange={(_, b) => onIsAllowEditChange(b)}
+          onChange={props.onAllowEditedChange}
           checked={props.activeElement.isAllowEdit}
         />
       </div>

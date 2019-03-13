@@ -19,7 +19,9 @@ export default (props: CanvasComPropsType) => {
   // 调色板change事件
   function onColorChange(e: any) {
     let value = e.target.value;
+    props.onErrorInfoChange('');
     setBacColor(value);
+    setColorValue(value);
     props.onColorChange(value);
     props.onColorValueChange(value);
   }
@@ -34,10 +36,10 @@ export default (props: CanvasComPropsType) => {
         props.onColorChange(value);
         props.onErrorInfoChange('');
       } else {
-        props.onErrorInfoChange('请输入正确的颜色值');
+        props.onErrorInfoChange('请输入正确的颜色值,以#开头 + 6位颜色值');
       }
     } else {
-      props.onErrorInfoChange('请输入正确的颜色值');
+      props.onErrorInfoChange('请输入正确的颜色值,以#开头 + 6位颜色值');
     }
   }
 

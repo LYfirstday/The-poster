@@ -190,8 +190,7 @@ export default () => {
 
   React.useEffect(() => {
     let dom = document.querySelector('#createPoster') as HTMLElement;
-    dom.addEventListener('click', pageEventListener, false)
-
+    dom.addEventListener('click', pageEventListener, false);
     return () => {
       dom.removeEventListener('click', pageEventListener, false);
     }
@@ -361,6 +360,9 @@ export default () => {
                 activeElement={state.activeElement}
                 onTopLeftZIndexChange={val => dispatch({type: 'textFormTopLeftZIndex', state: {val: val}})}
                 onTextComFormItemChange={(val, type, value) => dispatch({type: 'textFormItemChange', state: {val: val, type: type, value: value}})}
+                onFontSizeFontFamilyChange={(type, value) => dispatch({type: 'textComFontSizeFontFamily', state: {type: type, value: value}})}
+                onAllowEditedChange={() => dispatch({type: 'allowTextComEdited'})}
+                onTransformChange={(type, value) => dispatch({type: 'textComTramsformChange', state: {type: type, value: value}})}
               /> : null
           }
         </div>

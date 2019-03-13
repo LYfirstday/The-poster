@@ -51,6 +51,9 @@ export type ActionType = 'bacColor'    // 画布背景色板cahnge事件action
                        | 'textSizeMouseup'
                        | 'textFormTopLeftZIndex'    // 文本元素Top Left ZIndex三个属性表单变化时的action
                        | 'textFormItemChange'   // 文本元素自有属性表单值变化时的action
+                       | 'textComFontSizeFontFamily'    // 文本元素字号、字体改变action
+                       | 'allowTextComEdited'  // 是否允许文本元素可编辑
+                       | 'textComTramsformChange'    // 文本元素旋转角度变化action
 
 export interface ActionTypeInfo {
   type: ActionType,
@@ -619,6 +622,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
       let formItemType = action.state.type;
       // 获取控制字体属性选中列表
       let fontStyleImgList = formItemChangeEl.fontStyleImgList;
+      
       // 当点击的按钮类型为textAlign时，修改按钮激活状态，三个按钮只能有一个处于激活
       if (formItemType === 'textAlign') {
         switch (action.state.value) {
@@ -641,10 +645,13 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
             break;
         }
         formItemChangeEl.textElementInnerType.textAlign = action.state.value;
+      } else if ('height' === formItemType || 'width' === formItemType) {
+        formItemChangeEl.textElementInnerType[formItemType] = `${action.state.value}px`;
       } else {
         let activeFontStyle = fontStyleImgList.filter(val => {
           return val.type === formItemType;
         })[0];
+
         activeFontStyle.isChecked = !activeFontStyle.isChecked;
         if ((activeFontStyle.isChecked) === false) {
           switch (formItemType) {
@@ -661,19 +668,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
               break;
           }
         } else {
-          switch (formItemType) {
-            case 'fontWeight':
-              formItemChangeEl.textElementInnerType.fontWeight = action.state.value;
-              break;
-            case 'textDecoration':
-              formItemChangeEl.textElementInnerType.textDecoration = action.state.value;
-              break;
-            case 'fontStyle':
-              formItemChangeEl.textElementInnerType.fontStyle = action.state.value;
-              break;
-            default:
-              break;
-          }
+          formItemChangeEl.textElementInnerType[formItemType] = `${action.state.value}`;
         }
       }
       formItemChangeEl.textElementInnerType = {
@@ -682,6 +677,43 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
 
       return {
         ...state
+      }
+    case 'textComFontSizeFontFamily':
+        let fontStyleList = state.textArrayList;
+        let fontStyleChangeEl = fontStyleList.filter(val => {
+          return val.isChecked === true;
+        })[0];
+        let fontStyleType = action.state.type;
+        fontStyleChangeEl.textElementInnerType[fontStyleType] = action.state.value;
+        return { 
+          ...state,
+          textArrayList: [
+            ...fontStyleList
+          ]
+        }
+    case 'allowTextComEdited':
+      let canEditedList = state.textArrayList;
+      let canEditedEl = canEditedList.filter(val => {
+        return val.isChecked === true;
+      })[0];
+      canEditedEl.isAllowEdit = !canEditedEl.isAllowEdit;
+      return {
+        ...state,
+        textArrayList: [
+          ...canEditedList
+        ]
+      }
+    case 'textComTramsformChange':
+      let transformList = state.textArrayList;
+      let transformEl = transformList.filter(val => {
+        return val.isChecked === true;
+      })[0];
+      transformEl.textElementOuterType.transform = action.state.value;
+      return {
+        ...state,
+        textArrayList: [
+          ...transformList
+        ]
       }
     // 文本元素action==============================================================end
     default:
