@@ -1,12 +1,13 @@
 import * as React from 'react';
 import './createPoster.less';
 import CanvasControlCom from './canvasControlCom';
-import { ControlPanelListType, FontStyleImgType } from './poster';
+import { ControlPanelListType, FontStyleImgType, ImgElementType } from './poster';
 import CanvasControlImgCom, { imgFormValueType, PositionTopLeftType } from './canvasControlImgCom';
 import { CanvasPageState, CanvasPageReducer } from './createPosterReducers/createPosterReducers';
 import CanvasImgCom from './canvasImgCom';
 import CanvasTextCom from './canvasTextCom';
 import CanvasControlTextCom from './canvasControlTextCom';
+import { rotateValueFilter } from './../../static/ts/tools';
 
 // 控制板右边浮动菜单
 const controlPanelListInfo: ControlPanelListType[] = [
@@ -104,28 +105,28 @@ export const pageInitState: CanvasPageState = {
         distanceY: 0,
         distanceX: 0
       },
-      // {
-      //   elementType: 'image',
-      //   id: 'image125534',
-      //   isChecked: false,
-      //   imgUrl: require('./../../static/imgs/login-inner.png'),
-      //   elementStyles: {
-      //     height: '100px',
-      //     width: '60px',
-      //     top: '70px',
-      //     left: '56px',
-      //     zIndex: 1
-      //   },
-      //   outerElementStyles: {
-      //     top: '50px',
-      //     left: '36px',
-      //     zIndex: 1,
-      //     transform: 'rotate(0)',
-      //   },
-      //   isAllowEdit: false,
-      //   distanceY: 0,
-      //   distanceX: 0
-      // }
+      {
+        elementType: 'image',
+        id: 'image125534',
+        isChecked: false,
+        imgUrl: require('./../../static/imgs/login-inner.png'),
+        elementStyles: {
+          height: '100px',
+          width: '60px',
+          top: '70px',
+          left: '56px',
+          zIndex: 1
+        },
+        outerElementStyles: {
+          top: '50px',
+          left: '36px',
+          zIndex: 1,
+          transform: 'rotate(0)',
+        },
+        isAllowEdit: false,
+        distanceY: 0,
+        distanceX: 0
+      }
     ],
     textArrayList: [
       {
@@ -218,55 +219,148 @@ export default () => {
   //   dispatch({type: 'floatMenu', state: {floatMenu: 2}});
   // }
 
+  // draw the elements whitch rendered in class'poster-canvas' dom to the canvas
+  function drawElement() {
+    let canvas = document.querySelector('#canvas') as HTMLCanvasElement;
+    let context = canvas.getContext('2d') as CanvasRenderingContext2D;
+    let data = state.pageState;
+    // let canvasBackground = data.canvasBacInputValue;
+    // let canvasBackGroundImageUrl = data.canvasBacImgUrl;
+    // context.globalCompositeOperation = 'destination-over';
+    
+    // 获取排序后的图片元素数组，zIndex越大越靠前，利用 destination-over属性，后渲染的元素在原元素底下渲染
+    // 第一个选然层级比较高的元素
+    let imageElementsList = sort(data.imgsArrayList);
+    // let textElementsList = data.textArrayList;
+    
+    drawImage(context, imageElementsList);
+  }
+
+  function sort(arr: ImgElementType[]): ImgElementType[] {
+    for(let x = 0; x < arr.length; x ++) {
+      for(let y = 0; y < arr.length - 1 - x; y++) {
+        if (parseInt(`${arr[y].elementStyles.zIndex}`) > parseInt(`${arr[y+1].elementStyles.zIndex}`)) {
+          let temp = arr[y].elementStyles.zIndex;
+          arr[y].elementStyles.zIndex = arr[y+1].elementStyles.zIndex;
+          arr[y+1].elementStyles.zIndex = temp;
+        }
+      }
+    }
+    return arr;
+  }
+
+  function drawImage(context: CanvasRenderingContext2D, arr: ImgElementType[]) {
+    
+    arr.map(val => {
+      let img = new Image();
+      img.onload = function() {
+        // 获取图片元素宽、高、left、top值
+        let elementHeight = parseInt(val.elementStyles.height);
+        let elementWidth = parseInt(val.elementStyles.width);
+        let elementLeft = parseInt(val.elementStyles.left);
+        let elementTop = parseInt(val.elementStyles.top);
+        // 当有元素需要旋转时，并且以元素中心为旋转点时，需要将canvas坐标系0，0点移动到旋转元素中心上
+        // 围绕图片中心旋转 计算公式：( 图片宽度 / 2 [+ 图片x轴坐标], 图片高度 / 2 [+ 图片y轴坐标] )
+
+        // 设置画布旋转中心，设置为将要画的图片的中心
+        context.translate(elementWidth / 2 + elementLeft, elementHeight / 2 + elementTop);
+
+        // 将画布旋转，角度为：图片的角度 * Math.PI / 180
+        context.rotate(parseInt(rotateValueFilter(val.outerElementStyles.transform)) * Math.PI / 180);
+
+        // 将canvas坐标系0, 0点恢复
+        context.translate(-1 * ((elementWidth / 2) + elementLeft), -1 * ((elementHeight / 2) + elementTop));
+        // 向画布画元素
+        context.drawImage(img, elementLeft,elementTop,elementWidth,elementHeight);
+
+        // 重置当前坐标系
+        context.setTransform(1, 0, 0, 1, 0, 0);
+      };
+      img.src = val.imgUrl;
+    });
+
+    context.fillStyle = '#eeeeee';
+    context.fillRect(0, 0, 414, 736);
+  }
+
+  // 将canvas转换成base64图片并下载
+  function convertCanvasToImage(canvas: HTMLCanvasElement) {
+    let code: string = canvas.toDataURL('image/png');
+    let arr = code.split(';base64,');
+    // 取到图片类型
+    let contentType = arr[0].split(':')[1];
+    // 将图片的base64解码；base64编码方法：btoa()
+    let raw = window.atob(arr[1]);
+    let rawLength = raw.length;
+    let uInt8Array = new Uint8Array(rawLength);
+    for(let x = 0; x < rawLength; x++) {
+      // charCodeAt 将x位置的数据转换成Unicode编码格式
+      uInt8Array[x] = raw.charCodeAt(x);
+    }
+
+    let blob = new Blob([uInt8Array], {type: contentType});
+    
+    let aLink = document.createElement('a');
+    let aEvt = document.createEvent('HTMLEvents');
+    aEvt.initEvent('click', true, false);
+    aLink.download = '测试.png';
+    aLink.href = URL.createObjectURL(blob);
+    aLink.click();
+    console.log(blob);
+  }
+
   return (
     <div className='create-poster' id='createPoster'>
       <div className='create-poster-left'>
         {/* 左侧画板 */}
-        <div
-          className='poster-canvas'
-          style={{background: state.pageState.canvasBackground}}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* 图片元素属性控制面板 */}
-          <CanvasImgCom
-            imgsArrayList={state.pageState.imgsArrayList}
-            onImgMousedown={(e, id, offsetTop, offsetLeft) => 
-                            dispatch({      // 组件向action中传入event、当前选中元素id、元素本身的offsetTop offsetLeft值
-                              type: 'imgMousedown', 
-                              state: {
-                                event: e, 
-                                elId: id, 
-                                offsetTop: offsetTop, 
-                                offsetLeft: offsetLeft
-                              }}
-                            )}
-            onImgMousemove={(e, id) => dispatch({type: 'imgMousemove', state: {event: e, elId: id}})}
-            onImgMouseup={(e, id) => dispatch({type: 'imgMouseup', state: {event: e, elId: id}})}
-            onDeleteImgClick={(i) => dispatch({type: 'deleteImgElement', state: {index: i}})}
-            onImgSizeMousedown={(e, id, offsetTop, offsetLeft) =>
-                                  dispatch({
-                                    type: 'imgSizeMousedown',
-                                    state: {
-                                      event: e,
-                                      elId: id,
-                                      offsetTop: offsetTop,
-                                      offsetLeft: offsetLeft}
-                                  })
-                                }
-            onImgSizeMousemove={(e, id) => dispatch({type: 'imgSizeMousemove', state: {event: e, elId: id}})}
-            onImgSizeMouseup={(e, id) => dispatch({type: 'imgSizeMouseup', state: {event: e, elId: id}})} 
-          />
+        <canvas id='canvas' className='canvas' height='736' width='414'></canvas>
+        <div className='poster-canvas-outer'>
+          <div
+            className='poster-canvas'
+            style={{background: state.pageState.canvasBackground}}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* image component */}
+            <CanvasImgCom
+              imgsArrayList={state.pageState.imgsArrayList}
+              onImgMousedown={(e, id, offsetTop, offsetLeft) => 
+                              dispatch({      // 组件向action中传入event、当前选中元素id、元素本身的offsetTop offsetLeft值
+                                type: 'imgMousedown', 
+                                state: {
+                                  event: e, 
+                                  elId: id, 
+                                  offsetTop: offsetTop, 
+                                  offsetLeft: offsetLeft
+                                }}
+                              )}
+              onImgMousemove={(e, id) => dispatch({type: 'imgMousemove', state: {event: e, elId: id}})}
+              onImgMouseup={(e, id) => dispatch({type: 'imgMouseup', state: {event: e, elId: id}})}
+              onDeleteImgClick={(i) => dispatch({type: 'deleteImgElement', state: {index: i}})}
+              onImgSizeMousedown={(e, id, offsetTop, offsetLeft) =>
+                                    dispatch({
+                                      type: 'imgSizeMousedown',
+                                      state: {
+                                        event: e,
+                                        elId: id,
+                                        offsetTop: offsetTop,
+                                        offsetLeft: offsetLeft}
+                                    })
+                                  }
+              onImgSizeMousemove={(e, id) => dispatch({type: 'imgSizeMousemove', state: {event: e, elId: id}})}
+              onImgSizeMouseup={(e, id) => dispatch({type: 'imgSizeMouseup', state: {event: e, elId: id}})} 
+            />
 
-          {/* 文本元素 */}
-          <CanvasTextCom
-            textArrayList={state.pageState.textArrayList}
-            onTextComMousedown={(e, id, offsetTop, offsetLeft) => dispatch({type: 'textMousedown', state: {event: e, id: id, offsetTop: offsetTop, offsetLeft: offsetLeft}})}
-            onTextComMousemove={(e, id) => dispatch({type: 'textMousemove', state: {event: e, id: id}})}
-            onTextComMouseup={(e, id) => dispatch({type: 'textMouseup', state: {event: e, id: id}})}
-            onTextComSizeMousedown={(e, id) => dispatch({type: 'textSizeMousedown', state: {event: e, id: id}})}
-            onTextComSizeMousemove={(e, id) => dispatch({type: 'textSizeMousemove', state: {event: e, id: id}})}
-            onTextComSizeMouseup={(e, id) => dispatch({type: 'textSizeMouseup', state: {event: e, id: id}})}
-          />
+            {/* text component */}
+            <CanvasTextCom
+              textArrayList={state.pageState.textArrayList}
+              onTextComMousedown={(e, id, offsetTop, offsetLeft) => dispatch({type: 'textMousedown', state: {event: e, id: id, offsetTop: offsetTop, offsetLeft: offsetLeft}})}
+              onTextComMousemove={(e, id) => dispatch({type: 'textMousemove', state: {event: e, id: id}})}
+              onTextComMouseup={(e, id) => dispatch({type: 'textMouseup', state: {event: e, id: id}})}
+              onTextComSizeMousedown={(e, id) => dispatch({type: 'textSizeMousedown', state: {event: e, id: id}})}
+              onTextComSizeMousemove={(e, id) => dispatch({type: 'textSizeMousemove', state: {event: e, id: id}})}
+              onTextComSizeMouseup={(e, id) => dispatch({type: 'textSizeMouseup', state: {event: e, id: id}})}
+            />
+          </div>
         </div>
       </div>
 
@@ -298,7 +392,7 @@ export default () => {
           <p className='nav'></p>
           <div
             className={state.pageState.controlPanelListInfo[2].isActive ? 'contorl-item contorl-item-active' : 'contorl-item'}
-            // onClick={onGoBackClick}
+            onClick={drawElement}
           >
             <img src={state.pageState.controlPanelListInfo[2].imgUrl} />
             <span>{state.pageState.controlPanelListInfo[2].label}</span>
@@ -306,7 +400,7 @@ export default () => {
           <p className='nav'></p>
           <div
             className={state.pageState.controlPanelListInfo[3].isActive ? 'contorl-item contorl-item-active' : 'contorl-item'}
-            onClick={() => dispatch({type: 'floatMenu', state: {floatMenu: 3}})}
+            onClick={() => convertCanvasToImage(document.querySelector('#canvas') as HTMLCanvasElement)}
           >
             <img src={state.pageState.controlPanelListInfo[3].imgUrl} />
             <span>{state.pageState.controlPanelListInfo[3].label}</span>

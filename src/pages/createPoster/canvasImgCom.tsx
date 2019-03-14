@@ -80,8 +80,10 @@ const CanvasImgCom = (props: ImgComPropsType) => {
         <div
           className={val.isChecked ? 'canvas-img-com-inner inner-active' : 'canvas-img-com-inner'}
           onMouseDown={() => onImgMousedown(val.id)}
-          style={{background: `url(${val.imgUrl}) no-repeat center`, ...val.elementStyles}}
+          // style={{background: `url(${val.imgUrl}) no-repeat center`, ...val.elementStyles}}
         >
+          <img id={`${val.id}${val.elementType}`} src={val.imgUrl} style={{...val.elementStyles}} />
+          <div className='img-top'></div>
         </div>
       </div>
     ) : <></>

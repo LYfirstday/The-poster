@@ -20,15 +20,34 @@
     min-height: calc(100vh - 12rem);
     width: 75%;
     transition: all .3s;
-    .poster-canvas {
-      z-index: 3;
+    .poster-canvas-outer {
       position: relative;
+      z-index: 3;
       height: 736px;
       width: 414px;
       border: 1px solid #eee;
       box-shadow: 0 0 5px 0 #ccc;
-      background-size: 100% 100% !important;
       overflow: hidden;
+      .poster-canvas {
+        z-index: 3;
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background-size: 100% 100% !important;
+        overflow: hidden;
+      }
+    }
+    .canvas {
+      position: absolute;
+      // top: 0;
+      left: 0;
+      height: 736px;
+      width: 414px;
+      z-index: 5;
+      background-color: #fff;
+      border: 1px solid #ccc;
     }
   }
   &-right {
