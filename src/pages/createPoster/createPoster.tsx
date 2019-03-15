@@ -1,7 +1,7 @@
 import * as React from 'react';
 import './createPoster.less';
 import CanvasControlCom from './canvasControlCom';
-import { ControlPanelListType, FontStyleImgType, ImgElementType } from './poster';
+import { ControlPanelListType, FontStyleImgType, ImgElementType, TextComStyleType } from './poster';
 import CanvasControlImgCom, { imgFormValueType, PositionTopLeftType } from './canvasControlImgCom';
 import { CanvasPageState, CanvasPageReducer } from './createPosterReducers/createPosterReducers';
 import CanvasImgCom from './canvasImgCom';
@@ -115,12 +115,12 @@ export const pageInitState: CanvasPageState = {
           width: '60px',
           top: '70px',
           left: '56px',
-          zIndex: 1
+          zIndex: 8
         },
         outerElementStyles: {
           top: '50px',
           left: '36px',
-          zIndex: 1,
+          zIndex: 8,
           transform: 'rotate(0)',
         },
         isAllowEdit: false,
@@ -136,8 +136,8 @@ export const pageInitState: CanvasPageState = {
           left: '55px',
           zIndex: 1,
         },
-        textElementInnerType: {
-          fontFamily: '',
+        elementStyles: {
+          fontFamily: 'sans-serif',
           fontSize: '14px',
           fontWeight: 500,
           textDecoration: 'none',
@@ -145,12 +145,12 @@ export const pageInitState: CanvasPageState = {
           textAlign: 'left',
           top: '290px',
           left: '75px',
-          height: '21px',
+          minHeight: '21px',
           width: '300px',
           zIndex: 1,
           color: '#111111'
         },
-        content: '666阿斯达大神大神大神大神',
+        content: '阿自行车自行车可获得卡啥端口啊哈萨克大神空间的卡速度快奥斯卡的卡视角看',
         isChecked: false,
         elementType: 'text',
         id: 'text123',
@@ -163,7 +163,7 @@ export const pageInitState: CanvasPageState = {
     title: '画布属性',
     canvasBacInputValue: '#ffffff',
     errorInfo: '',
-    canvasBacImgUrl: '',
+    canvasBacImgUrl: require('./../../static/imgs/login-bac.jpg'),
     canvasBackground: `url('') no-repeat center #fff`,
     controlPanelListInfo: controlPanelListInfo,
     activeElement: {},
@@ -223,23 +223,26 @@ export default () => {
   function drawElement() {
     let canvas = document.querySelector('#canvas') as HTMLCanvasElement;
     let context = canvas.getContext('2d') as CanvasRenderingContext2D;
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    let ratio = getPixelRatio(context);
+    console.log(ratio);
+    console.log(window.getComputedStyle(canvas).lineHeight)
     let data = state.pageState;
     // let canvasBackground = data.canvasBacInputValue;
     // let canvasBackGroundImageUrl = data.canvasBacImgUrl;
-    // context.globalCompositeOperation = 'destination-over';
-    
+    context.globalCompositeOperation = 'destination-over';
     // 获取排序后的图片元素数组，zIndex越大越靠前，利用 destination-over属性，后渲染的元素在原元素底下渲染
     // 第一个选然层级比较高的元素
     let imageElementsList = sort(data.imgsArrayList);
-    // let textElementsList = data.textArrayList;
-    
+    let textElementsList = data.textArrayList;
+    drawText(context, textElementsList);
     drawImage(context, imageElementsList);
   }
 
   function sort(arr: ImgElementType[]): ImgElementType[] {
     for(let x = 0; x < arr.length; x ++) {
       for(let y = 0; y < arr.length - 1 - x; y++) {
-        if (parseInt(`${arr[y].elementStyles.zIndex}`) > parseInt(`${arr[y+1].elementStyles.zIndex}`)) {
+        if (parseInt(`${arr[y].elementStyles.zIndex}`) < parseInt(`${arr[y+1].elementStyles.zIndex}`)) {
           let temp = arr[y].elementStyles.zIndex;
           arr[y].elementStyles.zIndex = arr[y+1].elementStyles.zIndex;
           arr[y+1].elementStyles.zIndex = temp;
@@ -249,9 +252,9 @@ export default () => {
     return arr;
   }
 
-  function drawImage(context: CanvasRenderingContext2D, arr: ImgElementType[]) {
+  function drawImage(context: CanvasRenderingContext2D, imgsList: ImgElementType[]) {
     
-    arr.map(val => {
+    imgsList.map(val => {
       let img = new Image();
       img.onload = function() {
         // 获取图片元素宽、高、left、top值
@@ -278,9 +281,46 @@ export default () => {
       };
       img.src = val.imgUrl;
     });
+  }
 
-    context.fillStyle = '#eeeeee';
-    context.fillRect(0, 0, 414, 736);
+  function drawText(context: CanvasRenderingContext2D, textList: TextComStyleType[]) {
+    textList.map(val => {
+      let elementContent = val.content;
+      let elementWidth = parseInt(val.elementStyles.width);
+      let elementContentItems = elementContent.split('');
+      // 不加16画出来的位置有偏移
+      let elementTop = parseInt(val.elementStyles.top) + 13;
+      let elementLeft = parseInt(val.elementStyles.left);
+      // 设置此文本元素样式
+      context.font = (`${val.elementStyles.fontSize} ${val.elementStyles.fontFamily}`);
+      context.fillStyle = val.elementStyles.color;
+
+      // 文本元素旋转渲染
+      context.translate(elementWidth / 2 + elementLeft, parseInt(val.elementStyles.fontSize) / 2 + elementTop);
+      context.rotate(parseInt(rotateValueFilter(val.textElementOuterType.transform)) * Math.PI / 180);
+      context.translate(-1 * ((elementWidth / 2) + elementLeft), -1 * ((parseInt(val.elementStyles.fontSize) / 2) + elementTop));
+
+      // 文本换行：将要画的文本一个一个画出来，计算每个文本占用的宽度，当一行的宽度大于文本区域宽度时换行
+      // measureText api获取每个文本的宽度
+      let line = '';
+      for (let n = 0; n < elementContentItems.length; n++) {
+        let oneLineitems = line + elementContentItems[n];
+        let metrics = context.measureText(oneLineitems);
+        let testWidth = metrics.width;
+        if (testWidth > elementWidth && n > 0) {
+          
+          context.fillText(line, elementLeft, elementTop);
+          // 需要加lineheight属性画出来的位置有偏移
+          // 字体不一样lineheight没法计算
+          elementTop = elementTop + (parseInt(val.elementStyles.fontSize) * 1.3);
+          line = elementContentItems[n];
+        } else {
+          line = oneLineitems;
+        }
+      }
+      context.fillText(line, elementLeft, elementTop);
+      context.setTransform(1, 0, 0, 1, 0, 0);
+    });
   }
 
   // 将canvas转换成base64图片并下载
@@ -306,8 +346,18 @@ export default () => {
     aLink.download = '测试.png';
     aLink.href = URL.createObjectURL(blob);
     aLink.click();
-    console.log(blob);
   }
+
+  // 获取像素比
+  var getPixelRatio = function (context: any) {
+    var backingStore = context.backingStorePixelRatio ||
+        context.webkitBackingStorePixelRatio ||
+        context.mozBackingStorePixelRatio ||
+        context.msBackingStorePixelRatio ||
+        context.oBackingStorePixelRatio ||
+        context.backingStorePixelRatio || 1;
+    return (window.devicePixelRatio || 1) / backingStore;
+  };
 
   return (
     <div className='create-poster' id='createPoster'>

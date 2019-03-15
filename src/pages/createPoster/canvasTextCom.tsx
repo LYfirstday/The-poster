@@ -23,6 +23,10 @@ const CanvasTextCom = (props: TextComPropsType) => {
     document.onmousemove = onTextComMousemove.bind(out, id);
     document.onmouseup = onTextComMouseup.bind(out, id);
     props.onTextComMousedown(event, id, out.offsetTop, out.offsetLeft);
+
+    let dom2 = document.querySelector(`#${id}text`) as HTMLElement;
+    console.log('--------------');
+    console.log(window.getComputedStyle(dom2).lineHeight);
   }
 
   function onTextComMousemove(id: string) {
@@ -71,9 +75,10 @@ const CanvasTextCom = (props: TextComPropsType) => {
         ></p>
         <div
           className={val.isChecked ? 'canvas-text-com-inner text-inner-checked' : 'canvas-text-com-inner'}
-          style={{...val.textElementInnerType}}
+          style={{...val.elementStyles}}
           onMouseDown={() => onTextComMousedown(val.id)}
-        >阿斯达萨大神大神大神大神大神大神大神大神大神大神大神阿萨德阿斯大神大神大神大神大神</div>
+          id={`${val.id}${val.elementType}`}
+        >{val.content}</div>
       </div>
     ) : null
   )

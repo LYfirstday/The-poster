@@ -547,8 +547,8 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
       thisTextMove.textElementOuterType.top = topTextMove;
       thisTextMove.textElementOuterType.left = leftTextMove;
       // 设置图片实际位置，因为外部容器的padding为20，所以加20
-      thisTextMove.textElementInnerType.top = `${parseInt(topTextMove) + 20}px`;
-      thisTextMove.textElementInnerType.left = `${parseInt(leftTextMove) + 20}px`;
+      thisTextMove.elementStyles.top = `${parseInt(topTextMove) + 20}px`;
+      thisTextMove.elementStyles.left = `${parseInt(leftTextMove) + 20}px`;
 
       return {
         ...state,
@@ -626,8 +626,8 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
       let disYTextSize = thisTextSizeMove.distanceY;
       let disXTextSize = thisTextSizeMove.distanceX;
       // 当前图片宽高
-      let textHieght = parseInt(thisTextSizeMove.textElementInnerType.height);
-      let textWidth = parseInt(thisTextSizeMove.textElementInnerType.width);
+      let textHieght = parseInt(thisTextSizeMove.elementStyles.minHeight);
+      let textWidth = parseInt(thisTextSizeMove.elementStyles.width);
       // 当前鼠标移动时和mousedowen记录的位置 差值
       // Y轴差值
       let diffTextDisY = eventTextSizeMove.clientY - disYTextSize;
@@ -645,26 +645,26 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
 
       // 在第一象限时 X轴增大，图片高度增大；Y轴增大，图片宽度减小
       if (rotateDegText <= -rotateValueText && rotateDegText >= -(90 + rotateValueText)) {
-        thisTextSizeMove.textElementInnerType.width = `${textWidth + (disYTextSize - eventTextSizeMove.clientY)}px`;
-        thisTextSizeMove.textElementInnerType.height = `${textHieght + diffTextDisX}px`;
+        thisTextSizeMove.elementStyles.width = `${textWidth + (disYTextSize - eventTextSizeMove.clientY)}px`;
+        thisTextSizeMove.elementStyles.minHeight = `${textHieght + diffTextDisX}px`;
       }
 
       // 在第二象限时 X轴增大，图片宽度增大；Y轴增大，图片高度增大
       if (rotateDegText > -rotateValueText && rotateDegText < (90 - rotateValueText)) {
-        thisTextSizeMove.textElementInnerType.height = `${textHieght + diffTextDisY}px`;
-        thisTextSizeMove.textElementInnerType.width = `${textWidth + diffTextDisX}px`;
+        thisTextSizeMove.elementStyles.minHeight = `${textHieght + diffTextDisY}px`;
+        thisTextSizeMove.elementStyles.width = `${textWidth + diffTextDisX}px`;
       }
 
       // 在第三象限时  Y轴增大，图片宽度增大；X轴增大，图片高度减小
       if (rotateDegText >= (90 - rotateValueText) && rotateDegText <= (90 + rotateValueText)) {
-        thisTextSizeMove.textElementInnerType.width = `${textWidth + (eventTextSizeMove.clientY - disYTextSize)}px`;
-        thisTextSizeMove.textElementInnerType.height = `${textHieght + (disXTextSize - eventTextSizeMove.clientX)}px`;
+        thisTextSizeMove.elementStyles.width = `${textWidth + (eventTextSizeMove.clientY - disYTextSize)}px`;
+        thisTextSizeMove.elementStyles.minHeight = `${textHieght + (disXTextSize - eventTextSizeMove.clientX)}px`;
       }
 
       // 在第四象限时  X轴增大，图片宽度减小；Y轴增大，图片高度增大
       if ((rotateDegText > (90 + rotateValueText) && rotateDegText <= 180) || (rotateDegText < -(90 + rotateValueText) && rotateDegText >= -180)) {
-        thisTextSizeMove.textElementInnerType.height = `${textHieght + (disYTextSize - eventTextSizeMove.clientY)}px`;
-        thisTextSizeMove.textElementInnerType.width = `${textWidth + (disXTextSize - eventTextSizeMove.clientX)}px`;
+        thisTextSizeMove.elementStyles.minHeight = `${textHieght + (disYTextSize - eventTextSizeMove.clientY)}px`;
+        thisTextSizeMove.elementStyles.width = `${textWidth + (disXTextSize - eventTextSizeMove.clientX)}px`;
       }
 
       // !!! 因为要给高、宽赋值，所以每次计算差值都要从最新的鼠标位置计算，将最新的event事件鼠标的位置重新赋值给dis
@@ -718,8 +718,8 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         ...itemChangeEl.textElementOuterType,
         ...outerValue
       };
-      itemChangeEl.textElementInnerType = {
-        ...itemChangeEl.textElementInnerType,
+      itemChangeEl.elementStyles = {
+        ...itemChangeEl.elementStyles,
         ...innerValue
       };
 
@@ -763,10 +763,11 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
           default:
             break;
         }
-        formItemChangeEl.textElementInnerType.textAlign = action.state.value;
-      } else if ('height' === formItemType || 'width' === formItemType || 'color' === formItemType) {
-        formItemChangeEl.textElementInnerType[formItemType] = formItemType === 'color' ? action.state.value : `${action.state.value}px`;
+        formItemChangeEl.elementStyles.textAlign = action.state.value;
+      } else if ('minHeight' === formItemType || 'width' === formItemType || 'color' === formItemType) {
+        formItemChangeEl.elementStyles[formItemType] = formItemType === 'color' ? action.state.value : `${action.state.value}px`;
       } else {
+        console.log(formItemType);
         let activeFontStyle = fontStyleImgList.filter(val => {
           return val.type === formItemType;
         })[0];
@@ -775,23 +776,23 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         if ((activeFontStyle.isChecked) === false) {
           switch (formItemType) {
             case 'fontWeight':
-              formItemChangeEl.textElementInnerType.fontWeight = 500;
+              formItemChangeEl.elementStyles.fontWeight = 500;
               break;
             case 'textDecoration':
-              formItemChangeEl.textElementInnerType.textDecoration = 'none';
+              formItemChangeEl.elementStyles.textDecoration = 'none';
               break;
             case 'fontStyle':
-              formItemChangeEl.textElementInnerType.fontStyle = '';
+              formItemChangeEl.elementStyles.fontStyle = '';
               break;
             default:
               break;
           }
         } else {
-          formItemChangeEl.textElementInnerType[formItemType] = `${action.state.value}`;
+          formItemChangeEl.elementStyles[formItemType] = `${action.state.value}`;
         }
       }
-      formItemChangeEl.textElementInnerType = {
-        ...formItemChangeEl.textElementInnerType,
+      formItemChangeEl.elementStyles = {
+        ...formItemChangeEl.elementStyles,
       };
 
       return {
@@ -809,7 +810,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         return val.isChecked === true;
       })[0];
       let fontStyleType = action.state.type;
-      fontStyleChangeEl.textElementInnerType[fontStyleType] = action.state.value;
+      fontStyleChangeEl.elementStyles[fontStyleType] = action.state.value;
 
       return {
         ...state,
@@ -848,8 +849,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         pageState: {
           ...state.pageState,
           textArrayList: [
-            ...transformList,
-            transformEl
+            ...transformList
           ]
         }
       };

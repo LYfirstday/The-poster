@@ -76,7 +76,7 @@ export interface TextElementInnerType {
   textAlign: 'left' | 'center' | 'right',  // 文本位置
   top: string,
   left: string,
-  height: string,
+  minHeight: string,
   width: string,
   zIndex: number,
   color: string
@@ -85,7 +85,7 @@ export interface TextElementInnerType {
 // 整个文本元素样式类型
 export interface TextComStyleType {
   textElementOuterType: TextElementOuterType,
-  textElementInnerType: TextElementInnerType,
+  elementStyles: TextElementInnerType,
   isChecked: boolean,
   elementType: string,
   id: string,

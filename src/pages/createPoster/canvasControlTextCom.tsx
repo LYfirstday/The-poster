@@ -138,9 +138,9 @@ export default (props: ControlTextPropsType) => {
   // form表单容器和文本元素共有属性 top, left, zIndex
   // 这里应该显示的是真实的text元素位置和zIndex, 外部容器值在action中计算
   const [commomStyle, setCommomStyle] = React.useState({
-    top: `${parseInt(props.activeElement.textElementInnerType.top)}`,
-    left: `${parseInt(props.activeElement.textElementInnerType.left)}`,
-    zIndex: `${parseInt(props.activeElement.textElementInnerType.zIndex)}`
+    top: `${parseInt(props.activeElement.elementStyles.top)}`,
+    left: `${parseInt(props.activeElement.elementStyles.left)}`,
+    zIndex: `${parseInt(props.activeElement.elementStyles.zIndex)}`
   });
 
   //  top, left, zIndex三个值change事件
@@ -164,12 +164,12 @@ export default (props: ControlTextPropsType) => {
 
   // 文本元素自有属性form事件
   const [textComFormItem, setTextComFormItem] = React.useState({
-    fontStyle: props.activeElement.textElementInnerType.fontStyle,
-    fontWeight: props.activeElement.textElementInnerType.fontWeight,
-    height: `${parseInt(props.activeElement.textElementInnerType.height)}`,
-    width: `${parseInt(props.activeElement.textElementInnerType.width)}`,
-    textAlign: props.activeElement.textElementInnerType.textAlign,
-    textDecoration: props.activeElement.textElementInnerType.textDecoration,
+    fontStyle: props.activeElement.elementStyles.fontStyle,
+    fontWeight: props.activeElement.elementStyles.fontWeight,
+    minHeight: `${parseInt(props.activeElement.elementStyles.minHeight)}`,
+    width: `${parseInt(props.activeElement.elementStyles.width)}`,
+    textAlign: props.activeElement.elementStyles.textAlign,
+    textDecoration: props.activeElement.elementStyles.textDecoration,
   });
 
   // 自有属性form change事件
@@ -198,35 +198,35 @@ export default (props: ControlTextPropsType) => {
 
   React.useEffect(() => {
     setCommomStyle({
-      top: `${parseInt(props.activeElement.textElementInnerType.top)}`,
-      left: `${parseInt(props.activeElement.textElementInnerType.left)}`,
-      zIndex: `${parseInt(props.activeElement.textElementInnerType.zIndex)}`
+      top: `${parseInt(props.activeElement.elementStyles.top)}`,
+      left: `${parseInt(props.activeElement.elementStyles.left)}`,
+      zIndex: `${parseInt(props.activeElement.elementStyles.zIndex)}`
     });
     setTextComFormItem({
-      fontStyle: props.activeElement.textElementInnerType.fontStyle,
-      fontWeight: props.activeElement.textElementInnerType.fontWeight,
-      height: `${parseInt(props.activeElement.textElementInnerType.height)}`,
-      width: `${parseInt(props.activeElement.textElementInnerType.width)}`,
-      textAlign: props.activeElement.textElementInnerType.textAlign,
-      textDecoration: props.activeElement.textElementInnerType.textDecoration,
+      fontStyle: props.activeElement.elementStyles.fontStyle,
+      fontWeight: props.activeElement.elementStyles.fontWeight,
+      minHeight: `${parseInt(props.activeElement.elementStyles.minHeight)}`,
+      width: `${parseInt(props.activeElement.elementStyles.width)}`,
+      textAlign: props.activeElement.elementStyles.textAlign,
+      textDecoration: props.activeElement.elementStyles.textDecoration,
     });
     setTransform(`${rotateValueFilter(props.activeElement.textElementOuterType.transform)}`);
     setRotate(oppositeRotateValueFilter(props.activeElement.textElementOuterType.transform));
-    setTextInputColor(props.activeElement.textElementInnerType.color);
-    setTextColor(props.activeElement.textElementInnerType.color);
+    setTextInputColor(props.activeElement.elementStyles.color);
+    setTextColor(props.activeElement.elementStyles.color);
   },[
-    props.activeElement.textElementInnerType.top,
-    props.activeElement.textElementInnerType.left,
-    props.activeElement.textElementInnerType.zIndex,
-    props.activeElement.textElementInnerType.fontFamily,
-    props.activeElement.textElementInnerType.fontSize,
-    props.activeElement.textElementInnerType.fontStyle,
-    props.activeElement.textElementInnerType.fontWeight,
-    props.activeElement.textElementInnerType.height,
-    props.activeElement.textElementInnerType.width,
-    props.activeElement.textElementInnerType.textAlign,
-    props.activeElement.textElementInnerType.textDecoration,
-    props.activeElement.textElementInnerType.color,
+    props.activeElement.elementStyles.top,
+    props.activeElement.elementStyles.left,
+    props.activeElement.elementStyles.zIndex,
+    props.activeElement.elementStyles.fontFamily,
+    props.activeElement.elementStyles.fontSize,
+    props.activeElement.elementStyles.fontStyle,
+    props.activeElement.elementStyles.fontWeight,
+    props.activeElement.elementStyles.minHeight,
+    props.activeElement.elementStyles.width,
+    props.activeElement.elementStyles.textAlign,
+    props.activeElement.elementStyles.textDecoration,
+    props.activeElement.elementStyles.color,
     props.activeElement.textElementOuterType.transform
   ]);
 
@@ -265,7 +265,7 @@ export default (props: ControlTextPropsType) => {
   }
   
   // 调色板input change事件
-  const [textInputColor, setTextInputColor] = React.useState(props.activeElement.textElementInnerType.color);
+  const [textInputColor, setTextInputColor] = React.useState(props.activeElement.elementStyles.color);
 
   function onTextInputColorChange(e: any) {
     setTextInputColor(e.target.value);
@@ -301,10 +301,10 @@ export default (props: ControlTextPropsType) => {
         <FormControl style={{width: '50%'}}>
           <InputLabel htmlFor="age-simple">选择字体</InputLabel>
           <Select
-            value={props.activeElement.textElementInnerType.fontFamily}
+            value={props.activeElement.elementStyles.fontFamily}
             onChange={(e) => onFontSizeFontFamilyChange('fontFamily', e)}
           >
-            <MenuItem value='none'>
+            <MenuItem value='sans-serif'>
               <em>系统默认字体</em>
             </MenuItem>
             {
@@ -320,7 +320,7 @@ export default (props: ControlTextPropsType) => {
         <FormControl style={{width: '50%'}}>
           <InputLabel htmlFor="age-simple">选择文字字号</InputLabel>
           <Select
-            value={props.activeElement.textElementInnerType.fontSize}
+            value={props.activeElement.elementStyles.fontSize}
             onChange={(e) => onFontSizeFontFamilyChange('fontSize', e)}
           >
             <MenuItem value=''>
@@ -360,11 +360,11 @@ export default (props: ControlTextPropsType) => {
               onBlur={() => ontextComFormItemBlur('width')}
             />&nbsp;px&nbsp;&nbsp;&nbsp;&nbsp;
         高：<input
-              value={textComFormItem.height}
+              value={textComFormItem.minHeight}
               className='img-com-input'
               type='text'
-              onChange={(e) => onTextComFormItemChange('height', e.target.value)}
-              onBlur={() => ontextComFormItemBlur('height')}
+              onChange={(e) => onTextComFormItemChange('minHeight', e.target.value)}
+              onBlur={() => ontextComFormItemBlur('minHeight')}
               />&nbsp;px
       </div>
       <div className='item'>
