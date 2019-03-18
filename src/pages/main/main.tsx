@@ -18,6 +18,13 @@ const UserManagement = Loadable({
   timeout: 8000
 });
 
+// 活动管理 
+const ActivityManagement = Loadable({
+  loader: () => import('./../activityManagement/activityManagement'),
+  loading: Loading,
+  timeout: 8000
+});
+
 // 海报列表
 const PosterManagement = Loadable({
   loader: () => import('./../postersManagement/posters'),
@@ -62,6 +69,7 @@ export default (props: any) => {
           <Switch>
             <Route path='/index/users' component={UserManagement}/>
             <Route path='/index/userDetails' component={UserDetails}/>
+            <Route path='/index/activity' component={ActivityManagement}/>
             <Route path='/index/posters' component={PosterManagement}/>
             <Route path='/index/create' component={CreatePoster}/>
             <Route path='/index' render={ () => {return <Redirect to='/index/users'/>} }/>

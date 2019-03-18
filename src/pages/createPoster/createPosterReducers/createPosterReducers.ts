@@ -61,6 +61,7 @@ export type ActionType = 'bacColor'    // 画布背景色板cahnge事件action
                        | 'textComFontSizeFontFamily'    // 文本元素字号、字体改变action
                        | 'allowTextComEdited'  // 是否允许文本元素可编辑
                        | 'textComTramsformChange'    // 文本元素旋转角度变化action
+                       | 'textComContentChage'  //  文本内容变化
 
 export interface ActionTypeInfo {
   type: ActionType,
@@ -767,7 +768,6 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
       } else if ('minHeight' === formItemType || 'width' === formItemType || 'color' === formItemType) {
         formItemChangeEl.elementStyles[formItemType] = formItemType === 'color' ? action.state.value : `${action.state.value}px`;
       } else {
-        console.log(formItemType);
         let activeFontStyle = fontStyleImgList.filter(val => {
           return val.type === formItemType;
         })[0];
@@ -853,6 +853,22 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
           ]
         }
       };
+    case 'textComContentChage':
+      let contentList = state.pageState.textArrayList;
+      let contentEl = contentList.filter(val => {
+        return val.isChecked === true;
+      })[0];
+      contentEl.content = action.state.content;
+
+      return {
+        ...state,
+        pageState: {
+          ...state.pageState,
+          textArrayList: [
+            ...contentList
+          ]
+        }
+      }
     // 文本元素action==============================================================end
     default:
       return state;

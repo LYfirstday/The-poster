@@ -6,17 +6,29 @@
   padding-top: 5rem;
   width: 16rem;
   height: 100%;
-  background-color: #20335d;
   transition: all .3s;
+  background: url(./../../static/imgs/aside-bac.png) no-repeat center #20335d;
+  background-position: bottom;
   .list-item {
     padding: 1rem 0 1rem 2rem;
     color: #537eb7;
     border-top: 1px solid #35466c;
   }
   .list-item-active {
+    position: relative;
     color: #fff;
-    background-color: rgba(51, 51, 51, .5) !important;
+    background-color: #55a9fb !important;
     transition: all .3s;
+    &::before {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: block;
+      content: '';
+      width: 6px;
+      height: 100%;
+      background-color: #fff;
+    }
   }
   .border-top-bottom {
     border-bottom: 1px solid #35466c;

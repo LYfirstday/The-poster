@@ -1,6 +1,6 @@
 // 画布属性控制面板组件
 import * as React from 'react';
-import { Button, TextField } from '@material-ui/core';
+import { Button, TextField, Select, MenuItem, InputLabel, FormControl, } from '@material-ui/core';
 
 export interface CanvasComPropsType {
   pageState: any,
@@ -109,6 +109,24 @@ export default (props: CanvasComPropsType) => {
           margin="normal"
           className='item-activity-input'
         />
+      </div>
+      <div className='item'>
+        <span className='item-title'>活动类型:</span>
+        <FormControl style={{width: '50%'}}>
+          <InputLabel htmlFor="age-simple">选择活动类型</InputLabel>
+          <Select
+            // value={props.activeElement.elementStyles.fontFamily}
+            // onChange={(e) => onFontSizeFontFamilyChange('fontFamily', e)}
+          >
+            {/* {
+              fontFamily.map((val, i) =>
+                <MenuItem value={val.value} key={`${i}_${val.value}`}>{val.label}</MenuItem>
+              )
+            } */}
+            <MenuItem value={1}>活动1</MenuItem>
+            <MenuItem value={2}>活动2</MenuItem>
+          </Select>
+        </FormControl>
       </div>
       <div className='item'>
         <span className='important-tips'>*</span>

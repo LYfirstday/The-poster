@@ -15,7 +15,7 @@ export interface TextComPropsType {
 
 const CanvasTextCom = (props: TextComPropsType) => {
 
-  // 图片元素页面移动事件监听函数=============================================begin
+  // 文本元素页面移动事件监听函数=============================================begin
   function onTextComMousedown(id: string) {
     // mousedown事件记录图片外部容器位置
     event!.stopPropagation();
@@ -23,10 +23,6 @@ const CanvasTextCom = (props: TextComPropsType) => {
     document.onmousemove = onTextComMousemove.bind(out, id);
     document.onmouseup = onTextComMouseup.bind(out, id);
     props.onTextComMousedown(event, id, out.offsetTop, out.offsetLeft);
-
-    let dom2 = document.querySelector(`#${id}text`) as HTMLElement;
-    console.log('--------------');
-    console.log(window.getComputedStyle(dom2).lineHeight);
   }
 
   function onTextComMousemove(id: string) {
@@ -38,9 +34,9 @@ const CanvasTextCom = (props: TextComPropsType) => {
     document.onmousemove = null;
     document.onmouseup = null;
   }
-  // 图片元素页面移动事件监听函数=============================================end
+  // 文本元素页面移动事件监听函数=============================================end
 
-  // 图片元素右下角宽高控制图片事件监听函数===================================begin
+  // 文本元素右下角宽高控制图片事件监听函数===================================begin
   function onTextComSizeMousedown(id:string) {
     event!.stopPropagation();
     let out = document.querySelector(`#${id}`) as HTMLElement;
@@ -58,7 +54,7 @@ const CanvasTextCom = (props: TextComPropsType) => {
     document.onmousemove = null;
     document.onmouseup = null;
   }
-  // 图片元素右下角宽高控制图片事件监听函数===================================end
+  // 文本元素右下角宽高控制图片事件监听函数===================================end
 
   return (
     props.textArrayList.length > 0 ? props.textArrayList.map((val, i) =>
@@ -78,7 +74,9 @@ const CanvasTextCom = (props: TextComPropsType) => {
           style={{...val.elementStyles}}
           onMouseDown={() => onTextComMousedown(val.id)}
           id={`${val.id}${val.elementType}`}
-        >{val.content}</div>
+        >
+          {val.content}
+        </div>
       </div>
     ) : null
   )

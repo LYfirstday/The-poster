@@ -1,22 +1,44 @@
 import * as React from 'react';
 import './login.less';
 import { TextField, Button } from '@material-ui/core';
+import doService from './../../static/ts/axios';
 
 export default (props: any) => {
-  const [account, setAccount] = React.useState({userName: '', password: ''});
+  const [account, setAccount] = React.useState({userName: '', userPassword: ''});
   const [errorInfo, setErrorInfo] = React.useState('');
 
   const doLogin = () => {
-    props.history.push('/index')
-    return;
     if (!account.userName) {
       setErrorInfo('登录账号不能为空!');
       return;
     }
-    if (!account.password) {
+    if (!account.userPassword) {
       setErrorInfo('登录密码不能为空!');
       return;
     }
+    doService('/v1/user/login', 'POST', {...account}).then(res => {
+      if (res.code === 200) {
+        let {
+          roleId,
+          userId,
+          webToken,
+          userName
+        } = res.values;
+        let storage = window.sessionStorage;
+        let userInfo = {
+          ...{
+            roleId,
+            userId,
+            webToken,
+            userName
+          } 
+        };
+        storage.setItem('userInfo', JSON.stringify(userInfo));
+        props.history.push('/index')
+      } else {
+        setErrorInfo(res.description);
+      }
+    });
   }
 
   return (
@@ -32,7 +54,7 @@ export default (props: any) => {
             <TextField
               label="请输入登录账号"
               value={account.userName}
-              onChange={(e) => setAccount({userName: e.target.value, password: account.password})}
+              onChange={(e) => setAccount({userName: e.target.value, userPassword: account.userPassword})}
               margin="normal"
               className='input'
               type='text'
@@ -40,8 +62,8 @@ export default (props: any) => {
             <TextField
               label="请输入登录密码"
               type='password'
-              value={account.password}
-              onChange={(e) => setAccount({userName: account.userName, password: e.target.value})}
+              value={account.userPassword}
+              onChange={(e) => setAccount({userName: account.userName, userPassword: e.target.value})}
               margin="normal"
               className='input password'
             />

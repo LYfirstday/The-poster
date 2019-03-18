@@ -25,8 +25,15 @@ export default (userType?: number) => {
         {
           iconUrl: require('./../imgs/users.png'),
           activeIconUrl: require('./../imgs/users-active.png'),
-          context: '活动管理',
+          context: '管理端用户管理',
           path: '/index',
+          isActive: false
+        },
+        {
+          iconUrl: require('./../imgs/activity-img.png'),
+          activeIconUrl: require('./../imgs/activity-img-active.png'),
+          context: '活动管理',
+          path: '/index/activity',
           isActive: false
         },
         {

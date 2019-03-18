@@ -12,6 +12,7 @@ export interface ControlTextPropsType {
   onFontSizeFontFamilyChange: (type: string, value: string) => void
   onAllowEditedChange: () => void,
   onTransformChange: (type: string, value: string) => void,  // type: input还是slider;value: 数值
+  onContentChange: (value: string) => void
 }
 
 export type FontSizeFontFamilyType = {
@@ -214,6 +215,7 @@ export default (props: ControlTextPropsType) => {
     setRotate(oppositeRotateValueFilter(props.activeElement.textElementOuterType.transform));
     setTextInputColor(props.activeElement.elementStyles.color);
     setTextColor(props.activeElement.elementStyles.color);
+    testareaRef.current!.value = props.activeElement.content;
   },[
     props.activeElement.elementStyles.top,
     props.activeElement.elementStyles.left,
@@ -227,7 +229,8 @@ export default (props: ControlTextPropsType) => {
     props.activeElement.elementStyles.textAlign,
     props.activeElement.elementStyles.textDecoration,
     props.activeElement.elementStyles.color,
-    props.activeElement.textElementOuterType.transform
+    props.activeElement.textElementOuterType.transform,
+    props.activeElement.content
   ]);
 
   // 字体、字号change事件
@@ -293,6 +296,16 @@ export default (props: ControlTextPropsType) => {
     }
   }
 
+  // 文本内容改变
+
+  const testareaRef = React.useRef<HTMLTextAreaElement | null>(null);
+
+  function onContentBlur() {
+    props.onContentChange(testareaRef.current!.value);
+  }
+
+
+
   return (
     <>
       <p className='error-info'>{errorInfo}</p>
@@ -351,6 +364,15 @@ export default (props: ControlTextPropsType) => {
         />
       </div>
       <div className='item'>
+        <span className='item-title'>文本内容:</span>
+        <textarea
+          className='textarea-content'
+          ref={testareaRef}
+          id='textarea'
+          onBlur={onContentBlur}
+        ></textarea>
+      </div>
+      <div className='item'>
         <span className='item-title'>文本区域大小:</span>
         宽：<input
               value={textComFormItem.width}
@@ -400,7 +422,7 @@ export default (props: ControlTextPropsType) => {
           onChange={(e, val) => onSliderRotateChange('slider', val)}
         />
       </div>
-      <div className='item'>
+      {/* <div className='item'>
         <span className='item-title'>层级:</span>
         <input
           className='img-com-input'
@@ -409,7 +431,7 @@ export default (props: ControlTextPropsType) => {
           onBlur={() => onTopLeftZIndexBlur('zIndex')}
           value={commomStyle.zIndex}
         />
-      </div>
+      </div> */}
       <div className='item'>
         <span className='item-title'>是否编辑:</span>
         <Switch

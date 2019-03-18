@@ -134,7 +134,7 @@ export const pageInitState: CanvasPageState = {
           transform: 'rotate(0)',
           top: '270px',
           left: '55px',
-          zIndex: 1,
+          zIndex: 999,
         },
         elementStyles: {
           fontFamily: 'sans-serif',
@@ -224,9 +224,6 @@ export default () => {
     let canvas = document.querySelector('#canvas') as HTMLCanvasElement;
     let context = canvas.getContext('2d') as CanvasRenderingContext2D;
     context.clearRect(0, 0, canvas.width, canvas.height);
-    let ratio = getPixelRatio(context);
-    console.log(ratio);
-    console.log(window.getComputedStyle(canvas).lineHeight)
     let data = state.pageState;
     // let canvasBackground = data.canvasBacInputValue;
     // let canvasBackGroundImageUrl = data.canvasBacImgUrl;
@@ -289,10 +286,10 @@ export default () => {
       let elementWidth = parseInt(val.elementStyles.width);
       let elementContentItems = elementContent.split('');
       // 不加16画出来的位置有偏移
-      let elementTop = parseInt(val.elementStyles.top) + 13;
+      let elementTop = parseInt(val.elementStyles.top) + 20;
       let elementLeft = parseInt(val.elementStyles.left);
       // 设置此文本元素样式
-      context.font = (`${val.elementStyles.fontSize} ${val.elementStyles.fontFamily}`);
+      context.font = (`bold ${val.elementStyles.fontSize} ${val.elementStyles.fontFamily}`);
       context.fillStyle = val.elementStyles.color;
 
       // 文本元素旋转渲染
@@ -312,7 +309,7 @@ export default () => {
           context.fillText(line, elementLeft, elementTop);
           // 需要加lineheight属性画出来的位置有偏移
           // 字体不一样lineheight没法计算
-          elementTop = elementTop + (parseInt(val.elementStyles.fontSize) * 1.3);
+          elementTop = elementTop + (parseInt(val.elementStyles.fontSize) * 1.2);
           line = elementContentItems[n];
         } else {
           line = oneLineitems;
@@ -349,15 +346,15 @@ export default () => {
   }
 
   // 获取像素比
-  var getPixelRatio = function (context: any) {
-    var backingStore = context.backingStorePixelRatio ||
-        context.webkitBackingStorePixelRatio ||
-        context.mozBackingStorePixelRatio ||
-        context.msBackingStorePixelRatio ||
-        context.oBackingStorePixelRatio ||
-        context.backingStorePixelRatio || 1;
-    return (window.devicePixelRatio || 1) / backingStore;
-  };
+  // var getPixelRatio = function (context: any) {
+  //   var backingStore = context.backingStorePixelRatio ||
+  //       context.webkitBackingStorePixelRatio ||
+  //       context.mozBackingStorePixelRatio ||
+  //       context.msBackingStorePixelRatio ||
+  //       context.oBackingStorePixelRatio ||
+  //       context.backingStorePixelRatio || 1;
+  //   return (window.devicePixelRatio || 1) / backingStore;
+  // };
 
   return (
     <div className='create-poster' id='createPoster'>
@@ -513,7 +510,7 @@ export default () => {
               /> : null
           }
           {
-            state.pageState.pageCheckedType === 'text' ?
+            state.pageState.pageCheckedType === 'text' ? 
               <CanvasControlTextCom
                 activeElement={state.pageState.activeElement}
                 onTopLeftZIndexChange={val => dispatch({type: 'textFormTopLeftZIndex', state: {val: val}})}
@@ -521,6 +518,7 @@ export default () => {
                 onFontSizeFontFamilyChange={(type, value) => dispatch({type: 'textComFontSizeFontFamily', state: {type: type, value: value}})}
                 onAllowEditedChange={() => dispatch({type: 'allowTextComEdited'})}
                 onTransformChange={(type, value) => dispatch({type: 'textComTramsformChange', state: {type: type, value: value}})}
+                onContentChange={(value) => dispatch({type: 'textComContentChage', state: {content: value}})}
               /> : null
           }
         </div>

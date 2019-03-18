@@ -1,38 +1,26 @@
 import * as React from 'react';
-// import * as ReactDOM from 'react-dom';
-import './message.less';
+import { Snackbar } from '@material-ui/core';
 
-export type MessageType = 'info' | 'error' | 'waring' | 'success';
-
-export interface MessageProps {
-  type: MessageType,
-  duration?: number | string,
-  children?: string | React.ReactNode | JSX.Element,
+export interface MessagePropsType {
+  isOpen: boolean,
+  onMessageOpenOrClose: () => void,
+  children: React.ReactChild | string,
 }
 
-const Message = (props: MessageProps) => {
-
+export default (props: MessagePropsType) => {
   return (
-    <div className='message'>
-      {props.children}
+    <div>
+      <Snackbar
+        anchorOrigin={{ horizontal: 'center', vertical: 'top' }}
+        open={props.isOpen}
+        onClose={props.onMessageOpenOrClose}
+        ContentProps={{
+          'aria-describedby': 'message-id',
+        }}
+        autoHideDuration={2000}
+        message={props.children}
+      />
     </div>
   )
 }
 
-Message.newInstance = function messageNewInstance(props: any) {
-  // const [messages, setMessages] = React.useState([]);
-  let noticeDiv = document.createElement('div');
-  document.body.appendChild(noticeDiv);
-
-  // const onCLose = () => {
-  //   ReactDOM.unmountComponentAtNode(noticeDiv);
-  //   noticeDiv.parentNode!.removeChild(noticeDiv);
-  // }
-  return (
-    <Message
-      type='info'
-    />
-  )
-}
-
-export default Message
