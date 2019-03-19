@@ -19,7 +19,6 @@ export interface PaginationAction {
 export const paginationReducer = (state: PaginationState, action: PaginationAction) => {
   switch (action.type) {
     case 'init':
-      console.log(state)
       return state;
     case 'next':
       return {
@@ -37,7 +36,6 @@ export const paginationReducer = (state: PaginationState, action: PaginationActi
         pageSize: action.state.pageSize
       };
     case 'keyword':
-      console.log(action);
       return {
         ...state,
         keyword: action.state.keyword

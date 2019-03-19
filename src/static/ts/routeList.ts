@@ -16,8 +16,8 @@ export default (userType?: number) => {
     default:
       sideList = [
         {
-          iconUrl: require('./../imgs/users.png'),
-          activeIconUrl: require('./../imgs/users-active.png'),
+          iconUrl: require('./../imgs/manager.png'),
+          activeIconUrl: require('./../imgs/manager-active.png'),
           context: '用户管理',
           path: '/index',
           isActive: false
@@ -26,7 +26,7 @@ export default (userType?: number) => {
           iconUrl: require('./../imgs/users.png'),
           activeIconUrl: require('./../imgs/users-active.png'),
           context: '管理端用户管理',
-          path: '/index',
+          path: '/index/manager',
           isActive: false
         },
         {

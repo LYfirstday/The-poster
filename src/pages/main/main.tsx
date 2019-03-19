@@ -18,6 +18,13 @@ const UserManagement = Loadable({
   timeout: 8000
 });
 
+// 管理员
+const Manager = Loadable({
+  loader: () => import('./../manager/manager'),
+  loading: Loading,
+  timeout: 8000
+});
+
 // 活动管理 
 const ActivityManagement = Loadable({
   loader: () => import('./../activityManagement/activityManagement'),
@@ -69,6 +76,7 @@ export default (props: any) => {
           <Switch>
             <Route path='/index/users' component={UserManagement}/>
             <Route path='/index/userDetails' component={UserDetails}/>
+            <Route path='/index/manager' component={Manager}/>
             <Route path='/index/activity' component={ActivityManagement}/>
             <Route path='/index/posters' component={PosterManagement}/>
             <Route path='/index/create' component={CreatePoster}/>

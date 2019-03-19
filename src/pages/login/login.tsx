@@ -18,13 +18,14 @@ export default (props: any) => {
     }
     doService('/v1/user/login', 'POST', {...account}).then(res => {
       if (res.code === 200) {
+        let storage = window.sessionStorage;
+        storage.clear();
         let {
           roleId,
           userId,
           webToken,
           userName
         } = res.values;
-        let storage = window.sessionStorage;
         let userInfo = {
           ...{
             roleId,

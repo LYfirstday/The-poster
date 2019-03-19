@@ -3,6 +3,13 @@ import * as React from 'react';
 import { Dialog, DialogActions, DialogContent, DialogTitle, Slide, Button, TextField } from '@material-ui/core';
 import './createActivity.less';
 import Message from './../../components/message/message';
+import { ActivityPageStateType, ActivityData } from './activityReducer/activityReducer';
+
+export interface createActivityParamsType {
+  typeName: string, 
+  typeContext?: string
+  typeId?: string
+}
 
 function Transition(props: any) {
   return <Slide direction="up" {...props} />;
@@ -10,7 +17,10 @@ function Transition(props: any) {
 
 export interface CreateActivityPropsType {
   isOpen: boolean,
-  showOrCloseDialog: () => void
+  showOrCloseDialog: () => void,
+  doCreateActivity: (val: createActivityParamsType) => void,
+  state: ActivityPageStateType,
+  doEditActivity: (val: createActivityParamsType) => void
 }
 
 const CreateActivity = (props: CreateActivityPropsType) => {
@@ -26,14 +36,41 @@ const CreateActivity = (props: CreateActivityPropsType) => {
     if (!activityName) {
       setMessageInfo('请输入活动名称');
       onMessageOpenOrClose();
-    } else if (!activityContent) {
-
+      return;
+    }
+    let data: createActivityParamsType = {
+      typeName: activityName
+    };
+    
+    if (props.state.isEdit) {
+      let dataInfo = props.state.editActivityInfo as ActivityData;
+      data.typeContext = activityContent;
+      data.typeId = dataInfo.typeId;
+      props.doEditActivity(data);
+    } else {
+      if (activityContent) {
+        data.typeContext = activityContent;
+      }
+      props.doCreateActivity(data);
     }
   }
 
   function onMessageOpenOrClose() {
     setIsMessageOpen(!isMessageOpen);
   }
+
+  React.useEffect(() => {
+    if (props.isOpen) {
+      if (props.state.isEdit) {
+        let data = props.state.editActivityInfo as ActivityData;
+        activityNameRef.current!.value = data.typeName;
+        activityContentRef.current!.value = data.typeContext;
+      } else {
+        activityNameRef.current!.value = '';
+        activityContentRef.current!.value = '';
+      }
+    }
+  }, [props.isOpen, props.state.isEdit]);
 
   return (
     <div>
@@ -53,7 +90,7 @@ const CreateActivity = (props: CreateActivityPropsType) => {
             <span className='item-title'>活动名称:</span>
             <TextField
               inputRef={activityNameRef}
-              label="请输入活动名称"
+              placeholder="请输入活动名称"
               type='text'
               margin="none"
               className='item-activity-input'
@@ -64,7 +101,7 @@ const CreateActivity = (props: CreateActivityPropsType) => {
             <TextField
               inputRef={activityContentRef}
               id="outlined-textarea"
-              label="请输入活动说明"
+              placeholder="请输入活动说明"
               multiline
               margin="none"
               variant="outlined"
@@ -78,7 +115,9 @@ const CreateActivity = (props: CreateActivityPropsType) => {
             关闭
           </Button>
           <Button color="primary" variant="contained" onClick={doCreateActivity}>
-            创建
+            {
+              props.state.isEdit ? '编辑' : '创建'
+            }
           </Button>
         </DialogActions>
       </Dialog>

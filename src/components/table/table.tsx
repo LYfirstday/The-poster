@@ -3,7 +3,7 @@ import './table.less';
 
 export interface TableProps {
   theadeData: Array<string>,
-  children?: JSX.Element[]
+  children: any
 }
 
 export default (props: TableProps) => {

@@ -3,7 +3,7 @@ import { Snackbar } from '@material-ui/core';
 
 export interface MessagePropsType {
   isOpen: boolean,
-  onMessageOpenOrClose: () => void,
+  onMessageOpenOrClose?: () => void,
   children: React.ReactChild | string,
 }
 
