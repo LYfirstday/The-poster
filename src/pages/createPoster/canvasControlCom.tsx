@@ -1,6 +1,10 @@
 // 画布属性控制面板组件
 import * as React from 'react';
 import { Button, TextField, Select, MenuItem, InputLabel, FormControl, } from '@material-ui/core';
+import { ActivityData } from './../activityManagement/activityReducer/activityReducer';
+import { ActionTypeInfo } from './createPosterReducers/createPosterReducers';
+import doService from './../../static/ts/axios';
+import Message from './../../components/message/message';
 
 export interface CanvasComPropsType {
   pageState: any,
@@ -8,7 +12,9 @@ export interface CanvasComPropsType {
   errorInfo: string,    // 用户输入的颜色值不合规时的提示信息
   onColorChange: (v: string) => void,    // 颜色选择器值change事件的dispacth
   onErrorInfoChange: (v: string) => void,    // 用户输入的颜色值不合规时的提示信息的dispacth
-  onActivityUrlChange: (v: string) => void
+  onActivityUrlChange: (v: string) => void,
+  activityList: ActivityData[],
+  dispatch: React.Dispatch<ActionTypeInfo>
 }
 
 export default (props: CanvasComPropsType) => {
@@ -63,14 +69,54 @@ export default (props: CanvasComPropsType) => {
     }
   }
 
+  // 选择活动类型select change事件
+  function onActivityTypeChange(typeId: string) {
+    props.dispatch({ type: 'activityType_change', state: { typeId: typeId } });
+  }
+
   React.useEffect(() => {
     setBacColor(props.pageState.pageState.canvasBacInputValue);
     setColorValue(props.pageState.pageState.canvasBacInputValue);
     setActivity(`${props.pageState.pageState.activityPageUrl}`);
   }, [
     props.pageState.pageState.canvasBacInputValue, 
-    props.pageState.pageState.activityPageUrl
+    props.pageState.pageState.activityPageUrl,
   ])
+
+  // on message
+  const [onMessage, setMessage] = React.useState({isMessage: false, messageInfo: ''});
+
+  function onMessageOpenOrClose() {
+    setMessage({isMessage: false, messageInfo: ''});
+  }
+
+  // 上传背景图
+  function uploadBacImg() {
+    props.dispatch({ type: 'request_start' });
+    let input = document.querySelector('#uploadBacImg') as HTMLInputElement;
+    let file = input.files![0];
+    let fileType = file.type.split('/')[1];
+    let fileSize = file.size;
+    // 判断图片类型、大小是否合规
+    if (fileType !== 'jpg' && fileType !== 'jpeg' && fileType !== 'png') {
+      setMessage({isMessage: true, messageInfo: '请上传正确格式的图片'});
+      return;
+    }
+    if (fileSize > 2097152) {
+      setMessage({isMessage: true, messageInfo: '请上传小于2M大小的图片'});
+      return;
+    };
+    let formData = new FormData();
+    formData.append('file', file);
+    doService('/v1/file/upload', 'POST', formData).then(res => {
+      if (res.code === 200) {
+        props.dispatch({ type: 'bacImgUrl', state: {bacImgUrl: res.values} });
+      } else {
+        setMessage({isMessage: true, messageInfo: res.description});
+      }
+      props.dispatch({ type: 'request_end' });
+    });
+  }
 
   return (
     <>
@@ -115,16 +161,20 @@ export default (props: CanvasComPropsType) => {
         <FormControl style={{width: '50%'}}>
           <InputLabel htmlFor="age-simple">选择活动类型</InputLabel>
           <Select
-            // value={props.activeElement.elementStyles.fontFamily}
-            // onChange={(e) => onFontSizeFontFamilyChange('fontFamily', e)}
+            value={props.pageState.activityTypeId}
+            onChange={(e) => onActivityTypeChange(e.target.value)}
           >
             {/* {
               fontFamily.map((val, i) =>
                 <MenuItem value={val.value} key={`${i}_${val.value}`}>{val.label}</MenuItem>
               )
             } */}
-            <MenuItem value={1}>活动1</MenuItem>
-            <MenuItem value={2}>活动2</MenuItem>
+            {
+              props.activityList.length > 0 ?
+                props.activityList.map((val, i) =>
+                  <MenuItem key={`${val.typeId}_${i}`} value={val.typeId}>{val.typeName}</MenuItem>
+                ) : null
+            }
           </Select>
         </FormControl>
       </div>
@@ -135,7 +185,12 @@ export default (props: CanvasComPropsType) => {
       <div className='item'>
         <span className='item-title'>背景图:</span>
         <div className='item-upload'>
-          <input type='file' className='item-upload-file' />
+          <input
+            type='file'
+            id='uploadBacImg'
+            onChange={uploadBacImg}
+            className='item-upload-file'
+          />
           <Button
             variant="contained"
             color="primary"
@@ -147,6 +202,11 @@ export default (props: CanvasComPropsType) => {
         <span className='important-tips'>*</span>
         <strong className='important-content'> 支持上传小于2m的png/jpg/jpeg格式的图片，建议压缩后上传</strong>
       </div>
+      <Message
+        isOpen={onMessage.isMessage}
+        children={onMessage.messageInfo}
+        onMessageOpenOrClose={onMessageOpenOrClose}
+      />
     </>
   )
 }

@@ -11,6 +11,7 @@ export interface TextComPropsType {
   onTextComSizeMousedown: (e: any, id: string) => void,
   onTextComSizeMousemove: (e: any, id: string) => void,
   onTextComSizeMouseup: (e: any, id: string) => void,
+  onTextComDeleteImgClick: (v: number) => void
 }
 
 const CanvasTextCom = (props: TextComPropsType) => {
@@ -56,6 +57,12 @@ const CanvasTextCom = (props: TextComPropsType) => {
   }
   // 文本元素右下角宽高控制图片事件监听函数===================================end
 
+  // 图片元素左上角宽删除图片事件监听函数===================================begin
+  function onDeleteImgClick(index: number) {
+    props.onTextComDeleteImgClick(index);
+  }
+  // 图片元素左上角宽删除图片事件监听函数===================================end
+
   return (
     props.textArrayList.length > 0 ? props.textArrayList.map((val, i) =>
       <div
@@ -64,7 +71,9 @@ const CanvasTextCom = (props: TextComPropsType) => {
         className='canvas-text-com'
         style={{...val.textElementOuterType}}
       >
-        <p className={val.isChecked ? 'text-operation-delete text-operation-active' : 'text-operation-delete'}></p>
+        <p className={val.isChecked ? 'text-operation-delete text-operation-active' : 'text-operation-delete'}
+        onClick={() => onDeleteImgClick(i)}
+        ></p>
         <p
           className={val.isChecked ? 'text-operation-size-change text-operation-active' : 'text-operation-size-change'}
           onMouseDown={() => onTextComSizeMousedown(val.id)}

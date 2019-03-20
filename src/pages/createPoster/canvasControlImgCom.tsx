@@ -18,10 +18,10 @@ export interface PositionTopLeftType {
 export interface ControlImgComPropsType {
   onImgElementFormRotateChange: (imgFormValue: imgFormValueType) => void,
   onImgElementFormIsEditChange: (imgFormValue: boolean) => void,
-  onImgElementPositionTopLeftChange: (val: PositionTopLeftType) => void,
+  onImgElementPositionTopLeftChange: (val: PositionTopLeftType, activityElId: string) => void,
   onImgElementHieghtWidthChange: (val: any) => void
   activeImgObject: any,
-  pageState: CanvasPageState
+  pageState: CanvasPageState,
 }
 
 const CanvasControlImgCom = (props: ControlImgComPropsType) => {
@@ -122,7 +122,7 @@ const CanvasControlImgCom = (props: ControlImgComPropsType) => {
     props.onImgElementPositionTopLeftChange({
       ...props.activeImgObject.outerElementStyles,
       [type]: thisValue
-    });
+    }, props.activeImgObject.id);
   }
 
   // 图片元素宽高change事件

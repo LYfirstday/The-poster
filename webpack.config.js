@@ -17,6 +17,7 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].[hash:6].js'
   },
+  devtool: 'eval-source-map',
   resolve: {
     // Add '.ts' and '.tsx' as resolvable extensions.
     extensions: [".ts", ".tsx", ".js", ".json"]

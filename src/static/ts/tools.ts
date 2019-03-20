@@ -12,3 +12,14 @@ export const oppositeRotateValueFilter = (val: string): number => {
   let value = parseInt(arr2[0]);
   return -(value / 180 * 50 - 50);
 }
+
+// 简单的对象深拷贝
+export function deepCopy<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+// 生成元素id
+export function getElementDomId(type: string): string {
+  let randomNumber = Math.floor(Math.random() * 8999) + 1000;
+  return `${type}_${randomNumber}`
+}

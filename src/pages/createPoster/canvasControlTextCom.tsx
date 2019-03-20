@@ -443,19 +443,20 @@ export default (props: ControlTextPropsType) => {
       </div>
       <div className='item'>
         {
-          props.activeElement.fontStyleImgList.map((val: any, i: number) =>
-            <div
-              className={val.isChecked ? 'font-style-img-outer img-outer-active' : 'font-style-img-outer'}
-              key={`${i}_${val.alt}`}
-              onClick={() => onTextComFormItemChange(val.type, val.value)}
-            >
-              <img
-                alt={val.alt}
-                className='font-style-img'
-                src={val.src}
-              />
-            </div>
-          )
+          props.activeElement ?
+            props.activeElement.fontStyleImgList.map((val: any, i: number) =>
+              <div
+                className={val.isChecked ? 'font-style-img-outer img-outer-active' : 'font-style-img-outer'}
+                key={`${i}_${val.alt}`}
+                onClick={() => onTextComFormItemChange(val.type, val.value)}
+              >
+                <img
+                  alt={val.alt}
+                  className='font-style-img'
+                  src={val.src}
+                />
+              </div>
+            ) : null
         }
       </div>
     </>

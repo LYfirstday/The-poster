@@ -67,11 +67,11 @@ export default () => {
     setIsOpen(!isOpen);
   }
 
-  // on error
-  const [onMessage, setMessage] = React.useState({isError: false, errorInfo: ''});
+  // on message
+  const [onMessage, setMessage] = React.useState({isMessage: false, messageInfo: ''});
 
   function onMessageOpenOrClose() {
-    setMessage({isError: false, errorInfo: ''});
+    setMessage({isMessage: false, messageInfo: ''});
   }
 
   // get activities lsit
@@ -95,7 +95,7 @@ export default () => {
           pageSize: tag.size
         }});
       } else {
-        setMessage({ isError: !onMessage.isError, errorInfo: res.description });
+        setMessage({ isMessage: !onMessage.isMessage, messageInfo: res.description });
       }
       dispatch({type: 'request_end'});
     });
@@ -106,11 +106,11 @@ export default () => {
     dispatch({type: 'request_start'});
     doService('/v1/postertype/save', 'POST', val).then(res => {
       if (res.code === 200) {
-        setMessage({ isError: !onMessage.isError, errorInfo: '创建活动类型成功' });
+        setMessage({ isMessage: !onMessage.isMessage, messageInfo: '创建活动类型成功' });
         shouldCreateActivity();
         getActivityData();
       } else {
-        setMessage({ isError: !onMessage.isError, errorInfo: res.description });
+        setMessage({ isMessage: !onMessage.isMessage, messageInfo: res.description });
       }
       dispatch({type: 'request_end'});
     });
@@ -121,11 +121,11 @@ export default () => {
     dispatch({type: 'request_start'});
     doService('/v1/postertype/update', 'POST', val).then(res => {
       if (res.code === 200) {
-        setMessage({ isError: !onMessage.isError, errorInfo: '编辑活动类型成功' });
+        setMessage({ isMessage: !onMessage.isMessage, messageInfo: '编辑活动类型成功' });
         shouldCreateActivity();
         getActivityData();
       } else {
-        setMessage({ isError: !onMessage.isError, errorInfo: res.description });
+        setMessage({ isMessage: !onMessage.isMessage, messageInfo: res.description });
       }
       dispatch({type: 'request_end'});
     });
@@ -144,14 +144,13 @@ export default () => {
 
   // delete one activity info
   function deleteActivity(id: string) {
-    console.log(id)
     dispatch({type: 'request_start'});
     doService('/v1/postertype/update', 'POST', { typeId: id, deleteState: 1 }).then(res => {
       if (res.code === 200) {
-        setMessage({ isError: !onMessage.isError, errorInfo: '删除活动成功' });
+        setMessage({ isMessage: !onMessage.isMessage, messageInfo: '删除活动成功' });
         getActivityData();
       } else {
-        setMessage({ isError: !onMessage.isError, errorInfo: res.description });
+        setMessage({ isMessage: !onMessage.isMessage, messageInfo: res.description });
       }
       dispatch({type: 'request_end'});
     });
@@ -238,8 +237,8 @@ export default () => {
         state.isLoading ? <Loading /> : null
       }
       <Message
-        isOpen={onMessage.isError}
-        children={onMessage.errorInfo}
+        isOpen={onMessage.isMessage}
+        children={onMessage.messageInfo}
         onMessageOpenOrClose={onMessageOpenOrClose}
       />
     </div>

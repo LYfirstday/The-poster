@@ -1,9 +1,55 @@
-import { ControlPanelListType, ImgElementType, TextComStyleType } from './../poster';
+import { ControlPanelListType, ImgElementType, TextComStyleType, FontStyleImgType } from './../poster';
+import { deepCopy, getElementDomId } from './../../../static/ts/tools';
 
 // 当前页面选中元素状态，none:无选中元素，控制面板显示画板控制；image:选中图片元素，控制面
 // 板显示图片控制面板；text：文本元素被选中;默认为none
 export type PageCheckedType = 'none' | 'image' | 'text';
 import { rotateValueFilter } from './../../../static/ts/tools';
+
+const fontStyleImgList: FontStyleImgType[] = [
+  {
+    isChecked: false,
+    alt: '加粗',
+    src: require('./../../../static/imgs/overstriking.png'),
+    type: 'fontWeight',
+    value: 600
+  },
+  {
+    isChecked: false,
+    alt: '下划线',
+    src: require('./../../../static/imgs/underline.png'),
+    type: 'textDecoration',
+    value: 'underline'
+  },
+  {
+    isChecked: false,
+    alt: '斜体',
+    src: require('./../../../static/imgs/italic.png'),
+    type: 'fontStyle',
+    value: 'italic'
+  },
+  {
+    isChecked: true,
+    alt: '居左',
+    src: require('./../../../static/imgs/text-algin-left.png'),
+    type: 'textAlign',
+    value: 'left'
+  },
+  {
+    isChecked: false,
+    alt: '居中',
+    src: require('./../../../static/imgs/text-algin-center.png'),
+    type: 'textAlign',
+    value: 'center'
+  },
+  {
+    isChecked: false,
+    alt: '居右',
+    src: require('./../../../static/imgs/text-algin-right.png'),
+    type: 'textAlign',
+    value: 'right'
+  },
+];
 
 // 整个画板页面状态树
 export interface CanvasPageState {
@@ -17,13 +63,47 @@ export interface CanvasPageState {
     canvasBacInputValue: string,    // 用户输入的背景色值
     errorInfo: string,    // 提示错误信息
     canvasBacImgUrl?: string,  // 保存上传至服务器的背景图地址
-    canvasBackground: string,  // 将背景图地址放入style中
+    canvasBackground: string,  // 将背景图地址放入style中，用来在dom上显示
     controlPanelListInfo: ControlPanelListType[],  // 右侧浮动菜单列表
     activeElement: ImgElementType | TextComStyleType | {},
     pageCheckedType: PageCheckedType,
     activityPageUrl: string,    // 活动页面
-  }
+  },
+  isLoading: boolean,
+  activityTypeId: string,  // 活动类型id
 }
+
+// 添加初始化文本元素
+let initTextElement: TextComStyleType = {
+  textElementOuterType: {
+    transform: 'rotate(0)',
+    top: '270px',
+    left: '55px',
+    zIndex: 999,
+  },
+  elementStyles: {
+    fontFamily: 'sans-serif',
+    fontSize: '14px',
+    fontWeight: 500,
+    textDecoration: 'none',
+    fontStyle: '',
+    textAlign: 'left',
+    top: '290px',
+    left: '75px',
+    minHeight: '21px',
+    width: '300px',
+    zIndex: 1,
+    color: '#111111'
+  },
+  content: '选中文本元素，在控制板修改内容',
+  isChecked: false,
+  elementType: 'text',
+  id: '',
+  isAllowEdit: false,
+  distanceY: 0,
+  distanceX: 0,
+  fontStyleImgList: deepCopy(fontStyleImgList)
+};
 
 // action type
 export type ActionType = 'bacColor'    // 画布背景色板cahnge事件action
@@ -56,12 +136,16 @@ export type ActionType = 'bacColor'    // 画布背景色板cahnge事件action
                        | 'textSizeMousedown'    // 改变文本元素大小时鼠标事件
                        | 'textSizeMousemove'
                        | 'textSizeMouseup'
+                       | 'deleteTextElement'      // 删除一个文本元素
                        | 'textFormTopLeftZIndex'    // 文本元素Top Left ZIndex三个属性表单变化时的action
                        | 'textFormItemChange'   // 文本元素自有属性表单值变化时的action
                        | 'textComFontSizeFontFamily'    // 文本元素字号、字体改变action
                        | 'allowTextComEdited'  // 是否允许文本元素可编辑
                        | 'textComTramsformChange'    // 文本元素旋转角度变化action
                        | 'textComContentChage'  //  文本内容变化
+                       | 'request_start'
+                       | 'request_end'
+                       | 'activityType_change'  // 活动类型变化
 
 export interface ActionTypeInfo {
   type: ActionType,
@@ -99,7 +183,12 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
       };
     case 'bacImgUrl':
       return {
-        ...state
+        ...state,
+        pageState: {
+          ...state.pageState,
+          canvasBacImgUrl: action.state.bacImgUrl,
+          canvasBackground: `url('${action.state.bacImgUrl}') no-repeat center #fff`
+        }
       };
     case 'activityUrl':
       return {
@@ -119,14 +208,59 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
       });
       switch (action.state.floatMenu) {
         case 0:
+          let addImgList = state.pageState.imgsArrayList;
+          let newImgEL = {
+            elementType: 'image',
+            id: getElementDomId('image'),
+            isChecked: false,
+            imgUrl: action.state.imgUrl,
+            elementStyles: {
+              height: '150px',
+              width: '150px',
+              top: '290px',
+              left: '130px',
+              zIndex: 1
+            },
+            outerElementStyles: {
+              top: '270px',
+              left: '110px',
+              zIndex: 1,
+              transform: 'rotate(0)',
+            },
+            isAllowEdit: false,
+            distanceY: 0,
+            distanceX: 0
+          }
+          newImgEL.imgUrl = action.state.imgUrl;
+          newImgEL.id = getElementDomId('image');
+          addImgList.push(newImgEL);
+
           return {
             ...state,
             pageState: {
               ...state.pageState,
-              controlPanelListInfo: list
+              controlPanelListInfo: list,
+              imgsArrayList: [
+                ...addImgList
+              ]
             }
           }
-        case 2:  // 撤回一步
+        case 1:
+          let addTextList = state.pageState.textArrayList;
+          let newTextEL = deepCopy(initTextElement);
+          newTextEL.id = getElementDomId('text');
+          addTextList.push(newTextEL);
+          return {
+            ...state,
+            pageState: {
+              ...state.pageState,
+              controlPanelListInfo: list,
+              textArrayList: [
+                ...addTextList
+              ]
+            }
+          }
+        case 2:
           let stepList = state.pageStepState;
           let olderPageState = stepList.splice(stepList.length-2, 1)[0];
           return {
@@ -307,7 +441,6 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
       let diffDisY = eventSizeMove.clientY - disYSize;
       // X轴差值
       let diffDisX = eventSizeMove.clientX - disXSize;
-      // console.log(diffDisY, diffDisX)
       // 设置图片大小
       // 图片宽、高 = 旧的宽、高值 - 鼠标移动的距离
       // 将图片以中心视为坐标轴，分四个象限，右下角控制宽高按钮在不同象限设置宽高数据不同
@@ -414,14 +547,14 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
     case 'imgElementPositionTopLeft':
       let elementListIsPositonTopLeft = state.pageState.imgsArrayList;
       let thisElementIsPositonTopLeft = elementListIsPositonTopLeft.filter(val => {
-        return val.isChecked === true;
+        return action.state.activityElId === val.id;
       })[0];
       let {
         top,
         left,
         zIndex
       } = action.state.formValue;
-      // 页面状态数需要加上px，表单不需要px
+      // 页面状态需要加上px，表单不需要px
       thisElementIsPositonTopLeft.outerElementStyles = {
         ...thisElementIsPositonTopLeft.outerElementStyles,
         ...action.state.formValue,
@@ -588,6 +721,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
       let thisTextSize = listTextSize.filter(val => {
         return textSizeId === val.id;
       })[0];
+      
       listTextSize.map(val => {
         if (textSizeId === val.id) {
           val.distanceY = eventTextSize.clientY;
@@ -634,7 +768,6 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
       let diffTextDisY = eventTextSizeMove.clientY - disYTextSize;
       // X轴差值
       let diffTextDisX = eventTextSizeMove.clientX - disXTextSize;
-      // console.log(diffDisY, diffDisX)
       // 设置图片大小
       // 图片宽、高 = 旧的宽、高值 - 鼠标移动的距离
       // 将图片以中心视为坐标轴，分四个象限，右下角控制宽高按钮在不同象限设置宽高数据不同
@@ -696,6 +829,20 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
           ...state.pageState,
           textArrayList: [
             ...listSizeTextUp
+          ]
+        }
+      };
+    case 'deleteTextElement':
+      let deleteTextList = state.pageState.textArrayList;
+      let dTextIndex = action.state.index;
+      deleteTextList.splice(dTextIndex, 1);
+
+      return {
+        ...state,
+        pageState: {
+          ...state.pageState,
+          textArrayList: [
+            ...deleteTextList
           ]
         }
       };
@@ -870,6 +1017,22 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         }
       }
     // 文本元素action==============================================================end
+
+    case 'request_start':
+      return {
+        ...state,
+        isLoading: true
+      }
+    case 'request_end':
+      return {
+        ...state,
+        isLoading: false
+      }
+    case 'activityType_change':
+      return {
+        ...state,
+        activityTypeId: action.state.typeId
+      }
     default:
       return state;
   }
