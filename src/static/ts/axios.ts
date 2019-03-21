@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 // 显示图片地址前缀
-export const fileUrl = 'http://47.93.237.35:8099';
+export const fileUrl = '';
 // 设置接口默认前缀url
-axios.defaults.baseURL = 'http://47.93.237.35:8099';
+axios.defaults.baseURL = '';
 
 const storage: Storage = window.sessionStorage;
 
