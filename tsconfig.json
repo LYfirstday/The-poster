@@ -10,7 +10,7 @@
     "moduleResolution": "node",
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
-    "noImplicitThis": true,
+    "noImplicitThis": true, 
     "noImplicitAny": true,
     "allowSyntheticDefaultImports": true,
     "strictNullChecks": true,

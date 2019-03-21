@@ -4,174 +4,118 @@ import './canvasControlImgCom.less';
 import Slider from '@material-ui/lab/Slider';
 import { rotateValueFilter, oppositeRotateValueFilter } from './../../static/ts/tools';
 import { Switch } from '@material-ui/core';
-import { ImgElementStyleType, ImgOuterElementStyleType } from './poster';
-import { CanvasPageState } from './createPosterReducers/createPosterReducers';
+import {
+  ImgElementStyleType,
+  ImgOuterElementStyleType,
+  ImgElementType,
+} from './poster';
+import { ActionTypeInfo } from './createPosterReducers/createPosterReducers';
 
 export type imgFormValueType = Partial<ImgElementStyleType> | Partial<ImgOuterElementStyleType> | {isAllowEdit: boolean};
 
-export interface PositionTopLeftType {
-  top: string,
-  left: string,
-  zIndex: number
+export interface ImageElementControlPanelPropsType {
+  dispatch: React.Dispatch<ActionTypeInfo>,
+  activeImageElement: ImgElementType
 }
 
-export interface ControlImgComPropsType {
-  onImgElementFormRotateChange: (imgFormValue: imgFormValueType) => void,
-  onImgElementFormIsEditChange: (imgFormValue: boolean) => void,
-  onImgElementPositionTopLeftChange: (val: PositionTopLeftType, activityElId: string) => void,
-  onImgElementHieghtWidthChange: (val: any) => void
-  activeImgObject: any,
-  pageState: CanvasPageState,
-}
-
-const CanvasControlImgCom = (props: ControlImgComPropsType) => {
+const CanvasControlImgCom = (props: ImageElementControlPanelPropsType) => {
   // 错误提示信息
   const [errorInfo, setErrorInfo] = React.useState('');
 
   // 旋转角度
   // 由于组件用的数值和状态值需要经过换算，所以单独使用useState设置旋转角度
-  const [rotate, setRotate] = React.useState(oppositeRotateValueFilter(props.activeImgObject.outerElementStyles.transform));
+  const [rotate, setRotate] = React.useState(
+    oppositeRotateValueFilter(props.activeImageElement.outerElementStyles.transform)
+  );
 
   // 角度旋转滑动change事件
-  function onRotateChange(type: string, val: number) {
+  function onRotateChange(val: number) {
     // 将滑块在50值中的比例换算到180中，得出角度数值
     let rotateValue = (50 - val)/50 * 180;
     let rotate = `rotate(${rotateValue}deg)`;
     setRotate(val);
-    props.onImgElementFormRotateChange({[type]: rotate});
-  }
-
-  // 角度旋转Input输入框change事件
-  const [rotateInput, setRotateInput] = React.useState(rotateValueFilter(props.activeImgObject.outerElementStyles.transform));
-
-
-  function onRotateChangeInputChange(val: string) {
-    setRotateInput(val);
-  }
-
-  function onRotateChangeInputBlur() {
-    if (isNaN(parseInt(rotateInput))) {
-      setErrorInfo('只能输入正、负数!');
-      return;
-    } else if (parseInt(rotateInput) > 180 || parseInt(rotateInput) < -180) {
-      setErrorInfo('请输入-180 到 180的数字!');
-      return;
-    } else {
-      setErrorInfo('');
-    }
-    let rotate = `rotate(${rotateInput}deg)`;
-    props.onImgElementFormRotateChange({transform: rotate});
+    props.dispatch({
+      type: 'image_element_rotate_change',
+      state: {
+        elId: props.activeImageElement.id,
+        value: rotate
+      }
+    });
   }
 
   React.useEffect(() => {
-    setRotate(oppositeRotateValueFilter(props.activeImgObject.outerElementStyles.transform));
-    setFormPositionTopLeft({
-      top: parseInt(props.activeImgObject.elementStyles.top),
-      left: parseInt(props.activeImgObject.elementStyles.left),
-      zIndex: parseInt(props.activeImgObject.elementStyles.zIndex)
-    });
-    zIndexRef.current!.value = props.activeImgObject.elementStyles.zIndex;
-    setRotateInput(rotateValueFilter(props.activeImgObject.outerElementStyles.transform));
-    setImgHieghtWidt({
-      height: parseInt(props.activeImgObject.elementStyles.height),
-      width: parseInt(props.activeImgObject.elementStyles.width),
-    });
+    let thisElementStyle = props.activeImageElement.elementStyles;
+    zIndexInputRef.current!.value = `${thisElementStyle.zIndex}`;
+    rotateInputRef.current!.value = rotateValueFilter(props.activeImageElement.outerElementStyles.transform);
+    heightInputRef.current!.value = `${parseInt(thisElementStyle.height)}`;
+    widthInputRef.current!.value = `${parseInt(thisElementStyle.width)}`;
+    topInputRef.current!.value = `${parseInt(thisElementStyle.top)}`;
+    leftInputRef.current!.value = `${parseInt(thisElementStyle.left)}`;
+    setRotate(oppositeRotateValueFilter(props.activeImageElement.outerElementStyles.transform));
   }, [
-    props.activeImgObject,
-    props.activeImgObject.outerElementStyles.transform,
-    props.activeImgObject.outerElementStyles.isAllowEdit,
-    props.activeImgObject.elementStyles.top,
-    props.activeImgObject.elementStyles.left,
-    props.activeImgObject.elementStyles.zIndex,
-    props.activeImgObject.elementStyles.height,
-    props.activeImgObject.elementStyles.width,
+    props.activeImageElement,
+    props.activeImageElement.elementStyles.zIndex,
+    props.activeImageElement.outerElementStyles.transform,
+    props.activeImageElement.isAllowEdit,
+    props.activeImageElement.elementStyles.top,
+    props.activeImageElement.elementStyles.left,
+    props.activeImageElement.elementStyles.height,
+    props.activeImageElement.elementStyles.width,
   ]);
 
   // 是否可编辑change事件
   function onIsAllowEditChange(val: boolean) {
-    props.onImgElementFormIsEditChange(val);
+    props.dispatch({
+      type: 'image_element_is_allowed_edit',
+      state: {
+        elId: props.activeImageElement.id,
+        value: val
+      }
+    });
   }
 
   // 元素位置、层级关系form表单元素change事件
-  const zIndexRef = React.useRef<HTMLInputElement | null>(null);
+  const zIndexInputRef = React.useRef<HTMLInputElement | null>(null);
+  const rotateInputRef = React.useRef<HTMLInputElement | null>(null);
+  const heightInputRef = React.useRef<HTMLInputElement | null>(null);
+  const widthInputRef = React.useRef<HTMLInputElement | null>(null);
+  const topInputRef = React.useRef<HTMLInputElement | null>(null);
+  const leftInputRef = React.useRef<HTMLInputElement | null>(null);
 
-  function onZIndexChange(e: React.ChangeEvent<HTMLInputElement>) {
-    let re = /^[1-9]+[0-9]*]*$/;
-    if (!re.test(e.target.value)) {
-      setErrorInfo('请输入大于0的正数!');
-      return;
+  function onZIndexTopLeftHeightWidthChange(type: string, value: string, thisRef: React.MutableRefObject<HTMLInputElement | null>) {
+    let reNum = /^[0-9]+.?[0-9]*$/;
+    if (type === 'transform') {
+      if (value === '' || value === '-' || !reNum.test(value) || parseInt(value) > 180 || parseInt(value) < -180) {
+        setErrorInfo('请输入-180 到 180 的数字!');
+        return;
+      }
+    } else if (type === 'height' || type === 'width') {
+      if (value === '' || value === '-' || isNaN(parseInt(value)) || parseInt(value) < 0) {
+        setErrorInfo('请输入大于0的正数字!');
+        return;
+      }
+    } else if (type === 'zIndex') {
+      let re = /^[1-9]+[0-9]*]*$/;
+      if (!re.test(value)) {
+        setErrorInfo('请输入大于0的正数!');
+        return;
+      }
+    } else {
+      if (value === '' || value === '-' || !reNum.test(value)) {
+        setErrorInfo('请输入数字!');
+        return;
+      }
     }
+
     setErrorInfo('');
-    console.log(e.target.value)
-    zIndexRef.current!.value = e.target.value;
-    props.onImgElementPositionTopLeftChange({
-      ...props.activeImgObject.outerElementStyles,
-      ['zIndex']: e.target.value
-    }, props.activeImgObject.id);
-  }
-
-
-  const [formPositionTopLeft, setFormPositionTopLeft] = React.useState({
-    top: parseInt(props.activeImgObject.elementStyles.top),
-    left: parseInt(props.activeImgObject.elementStyles.left),
-    zIndex: parseInt(props.activeImgObject.elementStyles.zIndex)
-  });
-
-  function onImgPositionTopLeftChange(type: string, value: string) {
-    setFormPositionTopLeft({
-      ...formPositionTopLeft,
-      [type]: value
-    });
-  }
-
-  function onImgPositionTopLeftBlur(type: string) {
-    let thisValue = formPositionTopLeft[type];
-    if (isNaN(parseInt(thisValue))) {
-      setErrorInfo('只能输入正、负数!');
-      return;
-    } else {
-      setErrorInfo('');
-    }
-    // 面板显示的是实际图片的位置，减去20是外部容器的位置
-    // 外部容器有个20px的padding,所以减去20
-    if (type === 'top' || type === 'left') {
-      thisValue = parseInt(thisValue) - 20;
-    }
-
-    props.onImgElementPositionTopLeftChange({
-      ...props.activeImgObject.outerElementStyles,
-      [type]: thisValue
-    }, props.activeImgObject.id);
-  }
-
-  // 图片元素宽高change事件
-  const [imgHieghtWidt, setImgHieghtWidt] = React.useState({
-    height: parseInt(props.activeImgObject.elementStyles.height),
-    width: parseInt(props.activeImgObject.elementStyles.width),
-  });
-
-  function onImgElementHieghtWidthChange(type: string, value: string) {
-    setImgHieghtWidt({
-      ...imgHieghtWidt,
-      [type]: value
-    });
-  }
-
-  function onImgElementHieghtWidthBlur(type: string) {
-    let thisValue = imgHieghtWidt[type];
-    if (isNaN(parseInt(thisValue)) || parseInt(thisValue) <= 0) {
-      setErrorInfo('只能输入正数!');
-      return;
-    } else {
-      setErrorInfo('');
-    }
-    let {
-      height,
-      width
-    } = imgHieghtWidt;
-    props.onImgElementHieghtWidthChange({
-      height: `${height}`,
-      width: `${width}`,
+    thisRef.current!.value = value;
+    props.dispatch({
+      type: 'image_element_top_left_zIndex_transform_h_w_change',
+      state: {
+        elId: props.activeImageElement.id,
+        value: value,
+        type: type
+      }
     });
   }
 
@@ -181,18 +125,16 @@ const CanvasControlImgCom = (props: ControlImgComPropsType) => {
       <div className='item'>
         <span className='item-title'>元素尺寸:</span>
         宽：<input
-              value={imgHieghtWidt.width}
               className='img-com-input'
               type='text'
-              onChange={(e) => onImgElementHieghtWidthChange('width', e.target.value)}
-              onBlur={() => onImgElementHieghtWidthBlur('width')}
+              ref={widthInputRef}
+              onChange={(e) => onZIndexTopLeftHeightWidthChange('width', e.target.value, heightInputRef)}
             />&nbsp;px&nbsp;&nbsp;&nbsp;&nbsp;
         高：<input
-              value={imgHieghtWidt.height}
               className='img-com-input'
               type='text'
-              onChange={(e) => onImgElementHieghtWidthChange('height', e.target.value)}
-              onBlur={() => onImgElementHieghtWidthBlur('height')}
+              ref={heightInputRef}
+              onChange={(e) => onZIndexTopLeftHeightWidthChange('height', e.target.value, widthInputRef)}
               />&nbsp;px
       </div>
       <div className='item'>
@@ -200,16 +142,14 @@ const CanvasControlImgCom = (props: ControlImgComPropsType) => {
         Y：<input
             className='img-com-input'
             type='text'
-            onChange={(e) => onImgPositionTopLeftChange('top', e.target.value)}
-            value={formPositionTopLeft.top}
-            onBlur={() => onImgPositionTopLeftBlur('top')}
+            ref={topInputRef}
+            onChange={(e) => onZIndexTopLeftHeightWidthChange('top', e.target.value, topInputRef)}
             />&nbsp;px&nbsp;&nbsp;&nbsp;
         X：<input
              className='img-com-input'
              type='text'
-             onChange={(e) => onImgPositionTopLeftChange('left', e.target.value)}
-             value={formPositionTopLeft.left}
-             onBlur={() => onImgPositionTopLeftBlur('left')}
+             ref={leftInputRef}
+             onChange={(e) => onZIndexTopLeftHeightWidthChange('left', e.target.value, leftInputRef)}
            />&nbsp;px
       </div>
       <div className='item'>
@@ -217,15 +157,14 @@ const CanvasControlImgCom = (props: ControlImgComPropsType) => {
         <input
           className='img-com-input-rotate'
           type='text'
-          onChange={(e) => onRotateChangeInputChange(e.target.value)}
-          onBlur={(e) => onRotateChangeInputBlur()}
+          ref={rotateInputRef}
+          onChange={(e) => onZIndexTopLeftHeightWidthChange('transform', e.target.value, rotateInputRef)}
           style={{width: '3rem', marginRight: '.5rem'}}
-          value={`${rotateInput}`}
         />°
         <Slider
           value={rotate}
           aria-labelledby="label"
-          onChange={(e, val) => onRotateChange('transform', val)}
+          onChange={(e, val) => onRotateChange(val)}
         />
       </div>
       <div className='item'>
@@ -233,10 +172,8 @@ const CanvasControlImgCom = (props: ControlImgComPropsType) => {
         <input
           className='img-com-input'
           type='text'
-          ref={zIndexRef}
-          onChange={(e) => onZIndexChange(e)}
-          // onBlur={() => onImgPositionTopLeftBlur('zIndex')}
-          // value={formPositionTopLeft.zIndex}
+          ref={zIndexInputRef}
+          onChange={(e) => onZIndexTopLeftHeightWidthChange('zIndex', e.target.value, zIndexInputRef)}
         />
       </div>
       <div className='item'>
@@ -245,11 +182,11 @@ const CanvasControlImgCom = (props: ControlImgComPropsType) => {
           value='check'
           color="primary"
           onChange={(_, b) => onIsAllowEditChange(b)}
-          checked={props.activeImgObject.isAllowEdit}
+          checked={props.activeImageElement.isAllowEdit}
         />
       </div>
     </>
   )
 }
 
-export default CanvasControlImgCom
+export default CanvasControlImgCom as React.FC<ImageElementControlPanelPropsType>

@@ -2,16 +2,18 @@ import * as React from 'react';
 import './createPoster.less';
 import CanvasControlCom from './canvasControlCom';
 import { ControlPanelListType, ImgElementType, TextComStyleType } from './poster';
-import CanvasControlImgCom, { imgFormValueType, PositionTopLeftType } from './canvasControlImgCom';
+import CanvasControlImgCom from './canvasControlImgCom';
 import { CanvasPageState, CanvasPageReducer } from './createPosterReducers/createPosterReducers';
-import CanvasImgCom from './canvasImgCom';
-import CanvasTextCom from './canvasTextCom';
+// import CanvasImgCom from './canvasImgCom';
+// import CanvasTextCom from './canvasTextCom';
 import CanvasControlTextCom from './canvasControlTextCom';
 import { rotateValueFilter } from './../../static/ts/tools';
 import Loading from './../../components/loading/loading';
 import doService from './../../static/ts/axios';
 import { ActivityData } from './../activityManagement/activityReducer/activityReducer';
 import Message from './../../components/message/message';
+import ImageElementComponent from './imageElementComponent/imageElementComponent';
+import TextElementComponent from './textElementComponent/textElementComponent';
 
 // 控制板右边浮动菜单
 const controlPanelListInfo: ControlPanelListType[] = [
@@ -41,30 +43,7 @@ const controlPanelListInfo: ControlPanelListType[] = [
 export const pageInitState: CanvasPageState = {
   pageStepState: [],
   pageState: {
-    imgsArrayList: [
-      {
-        elementType: 'image',
-        id: 'image123',
-        isChecked: false,
-        imgUrl: require('./../../static/imgs/logo.jpg'),
-        elementStyles: {
-          height: '150px',
-          width: '150px',
-          top: '290px',
-          left: '130px',
-          zIndex: 1
-        },
-        outerElementStyles: {
-          top: '270px',
-          left: '110px',
-          zIndex: 1,
-          transform: 'rotate(0)',
-        },
-        isAllowEdit: false,
-        distanceY: 0,
-        distanceX: 0
-      }
-    ],  // 储存画布图片元素数组
+    imgsArrayList: [],  // 储存画布图片元素数组
     textArrayList: [],
     title: '画布属性',
     canvasBacInputValue: '#ffffff',
@@ -123,7 +102,7 @@ export default () => {
   function pageEventListener() {
     let el = event!.target as HTMLElement;
     if (el.classList.contains('create-poster-left') || el.classList.contains('poster-canvas')) {
-      dispatch({ type: 'pageElementChange', state: {value: 'none'} });
+      dispatch({ type: 'page_element_change', state: {value: 'none'} });
       dispatch({type: 'errorInfo', state: {errorInfo: ''}})
     }
   }
@@ -160,16 +139,11 @@ export default () => {
     let context = canvas.getContext('2d') as CanvasRenderingContext2D;
     context.clearRect(0, 0, canvas.width, canvas.height);
     let data = state.pageState;
-    // let canvasBackground = data.canvasBacInputValue;
-    // let canvasBackGroundImageUrl = data.canvasBacImgUrl;
     context.globalCompositeOperation = 'destination-over';
     // 获取排序后的图片元素数组，zIndex越大越靠前，利用 destination-over属性，后渲染的元素在原元素底下渲染
     // 第一个选然层级比较高的元素
-    console.log(data.imgsArrayList)
     let imageElementsList = sort(data.imgsArrayList);
     let textElementsList = data.textArrayList;
-    console.log(imageElementsList)
-    return;
     drawImage(context, imageElementsList);
     drawText(context, textElementsList);
     // 作为背景图，最后再渲染
@@ -180,9 +154,7 @@ export default () => {
     for(let x = 0; x < arr.length; x ++) {
       for(let y = 0; y < arr.length - 1 - x; y++) {
         if (parseInt(`${arr[y].elementStyles.zIndex}`) < parseInt(`${arr[y+1].elementStyles.zIndex}`)) {
-          let temp = arr[y].elementStyles.zIndex;
-          arr[y].elementStyles.zIndex = arr[y+1].elementStyles.zIndex;
-          arr[y+1].elementStyles.zIndex = temp;
+          [arr[y], arr[y+1]] = [arr[y+1], arr[y]];
         }
       }
     }
@@ -327,38 +299,32 @@ export default () => {
             style={{background: state.pageState.canvasBackground}}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* image component */}
-            <CanvasImgCom
-              imgsArrayList={state.pageState.imgsArrayList}
-              onImgMousedown={(e, id, offsetTop, offsetLeft) => 
-                              dispatch({      // 组件向action中传入event、当前选中元素id、元素本身的offsetTop offsetLeft值
-                                type: 'imgMousedown', 
-                                state: {
-                                  event: e, 
-                                  elId: id, 
-                                  offsetTop: offsetTop, 
-                                  offsetLeft: offsetLeft
-                                }}
-                              )}
-              onImgMousemove={(e, id) => dispatch({type: 'imgMousemove', state: {event: e, elId: id}})}
-              onImgMouseup={(e, id) => dispatch({type: 'imgMouseup', state: {event: e, elId: id}})}
-              onDeleteImgClick={(i) => dispatch({type: 'deleteImgElement', state: {index: i}})}
-              onImgSizeMousedown={(e, id, offsetTop, offsetLeft) =>
-                                    dispatch({
-                                      type: 'imgSizeMousedown',
-                                      state: {
-                                        event: e,
-                                        elId: id,
-                                        offsetTop: offsetTop,
-                                        offsetLeft: offsetLeft}
-                                    })
-                                  }
-              onImgSizeMousemove={(e, id) => dispatch({type: 'imgSizeMousemove', state: {event: e, elId: id}})}
-              onImgSizeMouseup={(e, id) => dispatch({type: 'imgSizeMouseup', state: {event: e, elId: id}})} 
-            />
 
-            {/* text component */}
-            <CanvasTextCom
+          {/* image element component */}
+          {
+            state.pageState.imgsArrayList.length > 0 ?
+              state.pageState.imgsArrayList.map((val, i) =>
+                <ImageElementComponent
+                  imageElement={val}
+                  dispatch={dispatch}
+                  index={i}
+                />
+              ) : null
+          }
+
+          {/* text component */}
+          {
+            state.pageState.textArrayList.length > 0 ?
+              state.pageState.textArrayList.map((val, i) =>
+                <TextElementComponent
+                textElement={val}
+                dispatch={dispatch}
+                index={i}
+                />
+              ) : null
+          }
+
+            {/* <CanvasTextCom
               textArrayList={state.pageState.textArrayList}
               onTextComMousedown={(e, id, offsetTop, offsetLeft) => dispatch({type: 'textMousedown', state: {event: e, id: id, offsetTop: offsetTop, offsetLeft: offsetLeft}})}
               onTextComMousemove={(e, id) => dispatch({type: 'textMousemove', state: {event: e, id: id}})}
@@ -367,7 +333,7 @@ export default () => {
               onTextComSizeMousemove={(e, id) => dispatch({type: 'textSizeMousemove', state: {event: e, id: id}})}
               onTextComSizeMouseup={(e, id) => dispatch({type: 'textSizeMouseup', state: {event: e, id: id}})}
               onTextComDeleteImgClick={index => dispatch({type: 'deleteTextElement', state: {index: index}})}
-            />
+            /> */}
           </div>
         </div>
       </div>
@@ -442,35 +408,37 @@ export default () => {
           {
             state.pageState.pageCheckedType === 'image' ?
               <CanvasControlImgCom
-                pageState={state}
-                activeImgObject={state.pageState.activeElement}
-                onImgElementFormRotateChange={(val: imgFormValueType) => dispatch({
-                  type: 'imgElementFormRotate',
-                  state: {
-                    imgFormValue: val
-                  }
-                })}
-                onImgElementFormIsEditChange={(val: boolean) => dispatch({
-                  type: 'imgElementFormIsEdit',
-                  state: {
-                    isAllowEdit: val
-                  }
-                })}
-                onImgElementPositionTopLeftChange={(val: PositionTopLeftType, activityElId: string) => dispatch({
-                  type: 'imgElementPositionTopLeft',
-                  state: {
-                    formValue: val,
-                    activityElId: activityElId
-                  }
-                })}
-                onImgElementHieghtWidthChange={(val: any) => dispatch({
-                  type: 'imgElementHieghtWidth',
-                  state: {
-                    formVal: {
-                      ...val
-                    }
-                  }
-                })}
+              dispatch={dispatch}
+              activeImageElement={state.pageState.activeElement as ImgElementType}
+                // pageState={state}
+                // activeImgObject={state.pageState.activeElement}
+                // onImgElementFormRotateChange={(val: imgFormValueType) => dispatch({
+                //   type: 'imgElementFormRotate',
+                //   state: {
+                //     imgFormValue: val
+                //   }
+                // })}
+                // onImgElementFormIsEditChange={(val: boolean) => dispatch({
+                //   type: 'imgElementFormIsEdit',
+                //   state: {
+                //     isAllowEdit: val
+                //   }
+                // })}
+                // onImgElementPositionTopLeftChange={(val: PositionTopLeftType, activityElId: string) => dispatch({
+                //   type: 'imgElementPositionTopLeft',
+                //   state: {
+                //     formValue: val,
+                //     activityElId: activityElId
+                //   }
+                // })}
+                // onImgElementHieghtWidthChange={(val: any) => dispatch({
+                //   type: 'imgElementHieghtWidth',
+                //   state: {
+                //     formVal: {
+                //       ...val
+                //     }
+                //   }
+                // })}
               /> : null
           }
           {

@@ -27,11 +27,8 @@ export function getElementDomId(type: string): string {
 
 // 函数防抖
 export function throttle(this: void, fn: Function, delay: number) {
-  let begin: number = new Date().getTime();
+  // let begin: number = new Date().getTime();
   let _this: any = this;
-  console.log(11111111111);
-  console.log(begin);
-  console.log()
   return function () {
     fn.apply(_this, arguments);
   }

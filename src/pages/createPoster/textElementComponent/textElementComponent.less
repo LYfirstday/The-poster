@@ -1,0 +1,108 @@
+@font-face {
+  font-family: '日本水面字';
+  src: url(./../../../static/fontFace/日本水面字.ttf);
+}
+
+@font-face {
+  font-family: '一纸情书';
+  src: url(./../../../static/fontFace/一纸情书.ttf);
+}
+
+@font-face {
+  font-family: '海派腔调禅大黑简';
+  src: url(./../../../static/fontFace/海派腔调禅大黑简.ttf);
+}
+
+@font-face {
+  font-family: 'jmlangmanmeigonggjm';
+  src: url(./../../../static/fontFace/jmlangmanmeigonggjm.ttf);
+}
+
+@font-face {
+  font-family: '汉仪秀英体繁';
+  src: url(./../../../static/fontFace/汉仪秀英体繁.ttf);
+}
+
+@font-face {
+  font-family: '钟齐李洤标准草书符号';
+  src: url(./../../../static/fontFace/钟齐李洤标准草书符号.ttf);
+}
+
+@font-face {
+  font-family: '毛泽东字体';
+  src: url(./../../../static/fontFace/毛泽东字体.ttf);
+}
+
+@font-face {
+  font-family: '春联标准行书体';
+  src: url(./../../../static/fontFace/春联标准行书体.ttf);
+}
+
+@font-face {
+  font-family: '叶根友毛笔行书';
+  src: url(./../../../static/fontFace/叶根友毛笔行书.ttf);
+}
+
+@font-face {
+  font-family: '方圆诗书体';
+  src: url(./../../../static/fontFace/方圆诗书体.ttf);
+}
+
+
+.canvas-text-com {
+  position: absolute;
+  padding: 20px;
+  display: block;
+  background-color: transparent;
+  user-select: none;
+  &-inner {
+    white-space: normal;
+    word-break: break-all;
+    outline: 1px dashed #ccc;
+    background-color: transparent;
+    overflow: hidden;
+    font-family: 'none';
+  }
+  .text-operation-delete {
+    position: absolute;
+    display: none;
+    z-index: 3;
+    top: 10px;
+    left: 10px;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: url(./../../../static/imgs/delete.png) no-repeat center #fc4848;
+    cursor: pointer;
+    user-select: none;
+  }
+  .text-operation-size-change {
+    position: absolute;
+    display: none;
+    z-index: 3;
+    right: 10px;
+    bottom: 10px;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: url(./../../../static/imgs/move.png) no-repeat center #fc4848;
+    cursor: move;
+    user-select: none;
+  }
+  &:hover &-inner{
+    outline: 1px dashed #fc4848;
+    cursor: move;
+  }
+  &:hover .text-operation-delete {
+    display: block;
+  }
+  &:hover .text-operation-size-change {
+    display: block;
+  }
+  .text-inner-checked {
+    outline: 1px dashed #fc4848;
+  }
+  .text-operation-active {
+    display: block;
+  }
+}

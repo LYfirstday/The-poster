@@ -7,7 +7,7 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 // 压缩css
 const OptimizeCSSASSETPlugin = require('optimize-css-assets-webpack-plugin');
 const tsImportPluginFactory = require('ts-import-plugin');
-// development   production
+// development   production 
 module.exports = {
   mode: 'development',
   entry: {
