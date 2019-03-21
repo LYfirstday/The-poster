@@ -554,12 +554,14 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         left,
         zIndex
       } = action.state.formValue;
+      console.log(action.state.formValue)
       // 页面状态需要加上px，表单不需要px
       thisElementIsPositonTopLeft.outerElementStyles = {
         ...thisElementIsPositonTopLeft.outerElementStyles,
         ...action.state.formValue,
         top: `${parseInt(top)}px`,
         left: `${parseInt(left)}px`,
+        zIndex: zIndex
       };
       thisElementIsPositonTopLeft.elementStyles = {
         ...thisElementIsPositonTopLeft.elementStyles,

@@ -41,7 +41,30 @@ const controlPanelListInfo: ControlPanelListType[] = [
 export const pageInitState: CanvasPageState = {
   pageStepState: [],
   pageState: {
-    imgsArrayList: [],  // 储存画布图片元素数组
+    imgsArrayList: [
+      {
+        elementType: 'image',
+        id: 'image123',
+        isChecked: false,
+        imgUrl: require('./../../static/imgs/logo.jpg'),
+        elementStyles: {
+          height: '150px',
+          width: '150px',
+          top: '290px',
+          left: '130px',
+          zIndex: 1
+        },
+        outerElementStyles: {
+          top: '270px',
+          left: '110px',
+          zIndex: 1,
+          transform: 'rotate(0)',
+        },
+        isAllowEdit: false,
+        distanceY: 0,
+        distanceX: 0
+      }
+    ],  // 储存画布图片元素数组
     textArrayList: [],
     title: '画布属性',
     canvasBacInputValue: '#ffffff',
@@ -142,8 +165,11 @@ export default () => {
     context.globalCompositeOperation = 'destination-over';
     // 获取排序后的图片元素数组，zIndex越大越靠前，利用 destination-over属性，后渲染的元素在原元素底下渲染
     // 第一个选然层级比较高的元素
+    console.log(data.imgsArrayList)
     let imageElementsList = sort(data.imgsArrayList);
     let textElementsList = data.textArrayList;
+    console.log(imageElementsList)
+    return;
     drawImage(context, imageElementsList);
     drawText(context, textElementsList);
     // 作为背景图，最后再渲染
@@ -153,7 +179,7 @@ export default () => {
   function sort(arr: ImgElementType[]): ImgElementType[] {
     for(let x = 0; x < arr.length; x ++) {
       for(let y = 0; y < arr.length - 1 - x; y++) {
-        if (parseInt(`${arr[y].elementStyles.zIndex}`) > parseInt(`${arr[y+1].elementStyles.zIndex}`)) {
+        if (parseInt(`${arr[y].elementStyles.zIndex}`) < parseInt(`${arr[y+1].elementStyles.zIndex}`)) {
           let temp = arr[y].elementStyles.zIndex;
           arr[y].elementStyles.zIndex = arr[y+1].elementStyles.zIndex;
           arr[y+1].elementStyles.zIndex = temp;

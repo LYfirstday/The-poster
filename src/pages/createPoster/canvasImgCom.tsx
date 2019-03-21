@@ -65,6 +65,27 @@ const CanvasImgCom = (props: ImgComPropsType) => {
   // 图片元素左上角宽删除图片事件监听函数===================================end
 
   return (
+    // <div
+    //   className='canvas-img-com'
+    //   // style={{...val.outerElementStyles}}
+    //   id='image123'
+    // >
+    //   <p
+    //     className={'delete-img'}
+    //     // onClick={() => onDeleteImgClick(i)}
+    //   ></p>
+    //   <p
+    //     className={'move-img'}
+    //     // onMouseDown={() => onImgSizeMousedown(val.id)}
+    //   >
+    //   </p>
+    //   <div
+    //     className={'canvas-img-com-inner'}
+    //     // onMouseDown={() => onImgMousedown(val.id)}
+    //     // style={{background: `url(${val.imgUrl}) no-repeat center`, ...val.elementStyles}}
+    //   >
+    //   </div>
+    // </div>
     props.imgsArrayList.length > 0 ? props.imgsArrayList.map((val, i) =>
       <div
         className='canvas-img-com'

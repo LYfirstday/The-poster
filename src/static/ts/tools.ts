@@ -1,3 +1,4 @@
+
 // 将transform中的rotate(xxdeg) xx 分割出来
 export const rotateValueFilter = (val: string): string => {
   let arr = val.split('(');
@@ -22,4 +23,16 @@ export function deepCopy<T>(obj: T): T {
 export function getElementDomId(type: string): string {
   let randomNumber = Math.floor(Math.random() * 8999) + 1000;
   return `${type}_${randomNumber}`
+}
+
+// 函数防抖
+export function throttle(this: void, fn: Function, delay: number) {
+  let begin: number = new Date().getTime();
+  let _this: any = this;
+  console.log(11111111111);
+  console.log(begin);
+  console.log()
+  return function () {
+    fn.apply(_this, arguments);
+  }
 }

@@ -70,6 +70,7 @@ const CanvasControlImgCom = (props: ControlImgComPropsType) => {
       left: parseInt(props.activeImgObject.elementStyles.left),
       zIndex: parseInt(props.activeImgObject.elementStyles.zIndex)
     });
+    zIndexRef.current!.value = props.activeImgObject.elementStyles.zIndex;
     setRotateInput(rotateValueFilter(props.activeImgObject.outerElementStyles.transform));
     setImgHieghtWidt({
       height: parseInt(props.activeImgObject.elementStyles.height),
@@ -92,6 +93,24 @@ const CanvasControlImgCom = (props: ControlImgComPropsType) => {
   }
 
   // 元素位置、层级关系form表单元素change事件
+  const zIndexRef = React.useRef<HTMLInputElement | null>(null);
+
+  function onZIndexChange(e: React.ChangeEvent<HTMLInputElement>) {
+    let re = /^[1-9]+[0-9]*]*$/;
+    if (!re.test(e.target.value)) {
+      setErrorInfo('请输入大于0的正数!');
+      return;
+    }
+    setErrorInfo('');
+    console.log(e.target.value)
+    zIndexRef.current!.value = e.target.value;
+    props.onImgElementPositionTopLeftChange({
+      ...props.activeImgObject.outerElementStyles,
+      ['zIndex']: e.target.value
+    }, props.activeImgObject.id);
+  }
+
+
   const [formPositionTopLeft, setFormPositionTopLeft] = React.useState({
     top: parseInt(props.activeImgObject.elementStyles.top),
     left: parseInt(props.activeImgObject.elementStyles.left),
@@ -214,9 +233,10 @@ const CanvasControlImgCom = (props: ControlImgComPropsType) => {
         <input
           className='img-com-input'
           type='text'
-          onChange={(e) => onImgPositionTopLeftChange('zIndex', e.target.value)}
-          onBlur={() => onImgPositionTopLeftBlur('zIndex')}
-          value={formPositionTopLeft.zIndex}
+          ref={zIndexRef}
+          onChange={(e) => onZIndexChange(e)}
+          // onBlur={() => onImgPositionTopLeftBlur('zIndex')}
+          // value={formPositionTopLeft.zIndex}
         />
       </div>
       <div className='item'>

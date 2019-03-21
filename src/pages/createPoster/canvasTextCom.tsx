@@ -14,7 +14,7 @@ export interface TextComPropsType {
   onTextComDeleteImgClick: (v: number) => void
 }
 
-const CanvasTextCom = (props: TextComPropsType) => {
+const CanvasTextCom = (props: any) => {
 
   // 文本元素页面移动事件监听函数=============================================begin
   function onTextComMousedown(id: string) {
@@ -64,7 +64,7 @@ const CanvasTextCom = (props: TextComPropsType) => {
   // 图片元素左上角宽删除图片事件监听函数===================================end
 
   return (
-    props.textArrayList.length > 0 ? props.textArrayList.map((val, i) =>
+    props.textArrayList.length > 0 ? props.textArrayList.map((val: any, i: number) =>
       <div
         id={val.id}
         key={`${i}_${val.id}`}
