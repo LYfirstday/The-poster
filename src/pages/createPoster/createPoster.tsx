@@ -3,9 +3,7 @@ import './createPoster.less';
 import CanvasControlCom from './canvasControlCom';
 import { ControlPanelListType, ImgElementType, TextComStyleType } from './poster';
 import CanvasControlImgCom from './canvasControlImgCom';
-import { CanvasPageState, CanvasPageReducer } from './createPosterReducers/createPosterReducers';
-// import CanvasImgCom from './canvasImgCom';
-// import CanvasTextCom from './canvasTextCom';
+import { CanvasPageState, CanvasPageReducer, ActionType } from './createPosterReducers/createPosterReducers';
 import CanvasControlTextCom from './canvasControlTextCom';
 import { rotateValueFilter } from './../../static/ts/tools';
 import Loading from './../../components/loading/loading';
@@ -15,7 +13,8 @@ import Message from './../../components/message/message';
 import ImageElementComponent from './imageElementComponent/imageElementComponent';
 import TextElementComponent from './textElementComponent/textElementComponent';
 
-// 控制板右边浮动菜单
+export default () => {
+  // 控制板右边浮动菜单
 const controlPanelListInfo: ControlPanelListType[] = [
   {
     label: '加图片',
@@ -39,27 +38,25 @@ const controlPanelListInfo: ControlPanelListType[] = [
   },
 ];
 
-// 页面初始状态
-export const pageInitState: CanvasPageState = {
-  pageStepState: [],
-  pageState: {
-    imgsArrayList: [],  // 储存画布图片元素数组
-    textArrayList: [],
-    title: '画布属性',
-    canvasBacInputValue: '#ffffff',
-    errorInfo: '',
-    canvasBacImgUrl: '',
-    canvasBackground: `url('') no-repeat center #fff`,
-    controlPanelListInfo: controlPanelListInfo,
-    activeElement: {},
-    pageCheckedType: 'none',
-    activityPageUrl: ''
-  },
-  isLoading: false,
-  activityTypeId: ''
-};
-
-export default () => {
+  // 页面初始状态
+  const pageInitState: CanvasPageState = {
+    pageStepState: [],
+    pageState: {
+      imgsArrayList: [],  // 储存画布图片元素数组
+      textArrayList: [],
+      title: '画布属性',
+      canvasBacInputValue: '#ffffff',
+      errorInfo: '',
+      canvasBacImgUrl: '',
+      canvasBackground: `url('') no-repeat center #fff`,
+      controlPanelListInfo: controlPanelListInfo,
+      activeElement: {},
+      pageCheckedType: 'none',
+      activityPageUrl: ''
+    },
+    isLoading: false,
+    activityTypeId: ''
+  };
 
   const [state, dispatch] = React.useReducer(
     CanvasPageReducer,
@@ -76,15 +73,15 @@ export default () => {
     // 全部符合则上传图片至服务器，获取图片地址，生成图片元素
     let formData = new FormData();
     formData.append('file', file);
-    dispatch({ type: 'request_start' });
+    dispatch({ type: ActionType.REQUEST_START });
 
     doService('/v1/file/upload', 'POST', formData).then(res => {
       if (res.code === 200) {
-        dispatch({type: 'floatMenu', state: {floatMenu: 0, imgUrl: res.values}});
+        dispatch({type: ActionType.FLOAT_MENU, state: {floatMenu: 0, imgUrl: res.values}});
       } else {
         setMessage({isMessage: true, messageInfo: res.description});
       }
-      dispatch({ type: 'request_end' });
+      dispatch({ type: ActionType.REQUEST_END });
     });
     
   }
@@ -102,8 +99,8 @@ export default () => {
   function pageEventListener() {
     let el = event!.target as HTMLElement;
     if (el.classList.contains('create-poster-left') || el.classList.contains('poster-canvas')) {
-      dispatch({ type: 'page_element_change', state: {value: 'none'} });
-      dispatch({type: 'errorInfo', state: {errorInfo: ''}})
+      dispatch({ type: ActionType.PAGE_ELEMENT_CHANGE, state: {value: 'none'} });
+      dispatch({type: ActionType.ERROR_INFO, state: {errorInfo: ''}})
     }
   }
 
@@ -111,14 +108,14 @@ export default () => {
   const [activityList, setActivityList] = React.useState<ActivityData[]>([]);
 
   function getActivityList() {
-    dispatch({ type: 'request_start' });
+    dispatch({ type: ActionType.REQUEST_START });
     doService('/v1/postertype/list', 'POST', {}).then(res => {
       if (res.code === 200) {
         let list: ActivityData[] = res.values.content;
         setActivityList(list);
-        dispatch({ type: 'request_end' });
+        dispatch({ type: ActionType.REQUEST_END });
       } else {
-        dispatch({ type: 'request_end' });
+        dispatch({ type: ActionType.REQUEST_END });
       }
     });
   }
@@ -181,6 +178,9 @@ export default () => {
           let elementWidth = parseInt(val.elementStyles.width);
           let elementLeft = parseInt(val.elementStyles.left);
           let elementTop = parseInt(val.elementStyles.top);
+
+          let rotate  =parseInt(rotateValueFilter(val.outerElementStyles.transform));
+          
           // 当有元素需要旋转时，并且以元素中心为旋转点时，需要将canvas坐标系0，0点移动到旋转元素中心上
           // 围绕图片中心旋转 计算公式：( 图片宽度 / 2 [+ 图片x轴坐标], 图片高度 / 2 [+ 图片y轴坐标] )
   
@@ -188,7 +188,7 @@ export default () => {
           context.translate(elementWidth / 2 + elementLeft, elementHeight / 2 + elementTop);
   
           // 将画布旋转，角度为：图片的角度 * Math.PI / 180
-          context.rotate(parseInt(rotateValueFilter(val.outerElementStyles.transform)) * Math.PI / 180);
+          context.rotate(rotate * Math.PI / 180);
   
           // 将canvas坐标系0, 0点恢复
           context.translate(-1 * ((elementWidth / 2) + elementLeft), -1 * ((elementHeight / 2) + elementTop));
@@ -206,40 +206,43 @@ export default () => {
   function drawText(context: CanvasRenderingContext2D, textList: TextComStyleType[]) {
     if (textList.length > 0) {
       textList.map(val => {
-        let elementContent = val.content;
+        
+        let elementContent = val.content.split('');
         let elementWidth = parseInt(val.elementStyles.width);
-        let elementContentItems = elementContent.split('');
-        // 不加16画出来的位置有偏移
-        let elementTop = parseInt(val.elementStyles.top) + 20;
-        let elementLeft = parseInt(val.elementStyles.left);
-        // 设置此文本元素样式
-        context.font = (`${val.elementStyles.fontSize} ${val.elementStyles.fontFamily}`);
+        let fontSize = parseInt(val.elementStyles.fontSize);
+        let fontFamily = val.elementStyles.fontFamily;
+        let top = parseInt(val.elementStyles.top);
+        let left = parseInt(val.elementStyles.left);
+        let rotate = parseInt(rotateValueFilter(val.textElementOuterType.transform));
+
+        context.font = `${fontSize}px ${fontFamily}`;
         context.fillStyle = val.elementStyles.color;
-  
-        // 文本元素旋转渲染
-        context.translate(elementWidth / 2 + elementLeft, parseInt(val.elementStyles.fontSize) / 2 + elementTop);
-        context.rotate(parseInt(rotateValueFilter(val.textElementOuterType.transform)) * Math.PI / 180);
-        context.translate(-1 * ((elementWidth / 2) + elementLeft), -1 * ((parseInt(val.elementStyles.fontSize) / 2) + elementTop));
-  
-        // 文本换行：将要画的文本一个一个画出来，计算每个文本占用的宽度，当一行的宽度大于文本区域宽度时换行
-        // measureText api获取每个文本的宽度
-        let line = '';
-        for (let n = 0; n < elementContentItems.length; n++) {
-          let oneLineitems = line + elementContentItems[n];
-          let metrics = context.measureText(oneLineitems);
-          let testWidth = metrics.width;
-          if (testWidth > elementWidth && n > 0) {
-            
-            context.fillText(line, elementLeft, elementTop);
-            // 需要加lineheight属性画出来的位置有偏移
-            // 字体不一样lineheight没法计算
-            elementTop = elementTop + (parseInt(val.elementStyles.fontSize) * 1.2);
-            line = elementContentItems[n];
+        context.textBaseline = 'top';
+
+        // 由于不同字体、字体大小、行高以及旋转角度会有误差，0.15是减小误差的一个平衡值
+        context.translate(left, top + fontSize * 0.15);
+        // 将画布旋转，角度为：图片的角度 * Math.PI / 180
+        context.rotate(rotate * Math.PI / 180);
+
+        let contentLine = '';
+        let fontTop = 0;
+
+        elementContent.map((val, i) => {
+          let thisLine = contentLine + val;
+          let metrics = context.measureText(thisLine);
+          let contentWidth = metrics.width;
+          if (contentWidth > elementWidth && i > 0) {
+            context.fillText(contentLine, 0, fontTop);
+            fontTop = fontTop + fontSize * 1.2;
+            contentLine = val;
           } else {
-            line = oneLineitems;
+            contentLine = thisLine;
           }
-        }
-        context.fillText(line, elementLeft, elementTop);
+        });
+        context.fillText(contentLine, 0, fontTop);
+        // 将canvas坐标系0, 0点恢复
+        // 重置当前坐标系
+        context.translate(-1 * left, -1 * (top + fontSize * 0.2142));
         context.setTransform(1, 0, 0, 1, 0, 0);
       });
     }
@@ -299,41 +302,31 @@ export default () => {
             style={{background: state.pageState.canvasBackground}}
             onClick={(e) => e.stopPropagation()}
           >
+            {/* image element component */}
+            {
+              state.pageState.imgsArrayList.length > 0 ?
+                state.pageState.imgsArrayList.map((val, i) =>
+                  <ImageElementComponent
+                    key={`${val.id}_${i}`}
+                    imageElement={val}
+                    dispatch={dispatch}
+                    index={i}
+                  />
+                ) : null
+            }
 
-          {/* image element component */}
-          {
-            state.pageState.imgsArrayList.length > 0 ?
-              state.pageState.imgsArrayList.map((val, i) =>
-                <ImageElementComponent
-                  imageElement={val}
-                  dispatch={dispatch}
-                  index={i}
-                />
-              ) : null
-          }
-
-          {/* text component */}
-          {
-            state.pageState.textArrayList.length > 0 ?
-              state.pageState.textArrayList.map((val, i) =>
-                <TextElementComponent
-                textElement={val}
-                dispatch={dispatch}
-                index={i}
-                />
-              ) : null
-          }
-
-            {/* <CanvasTextCom
-              textArrayList={state.pageState.textArrayList}
-              onTextComMousedown={(e, id, offsetTop, offsetLeft) => dispatch({type: 'textMousedown', state: {event: e, id: id, offsetTop: offsetTop, offsetLeft: offsetLeft}})}
-              onTextComMousemove={(e, id) => dispatch({type: 'textMousemove', state: {event: e, id: id}})}
-              onTextComMouseup={(e, id) => dispatch({type: 'textMouseup', state: {event: e, id: id}})}
-              onTextComSizeMousedown={(e, id) => dispatch({type: 'textSizeMousedown', state: {event: e, id: id}})}
-              onTextComSizeMousemove={(e, id) => dispatch({type: 'textSizeMousemove', state: {event: e, id: id}})}
-              onTextComSizeMouseup={(e, id) => dispatch({type: 'textSizeMouseup', state: {event: e, id: id}})}
-              onTextComDeleteImgClick={index => dispatch({type: 'deleteTextElement', state: {index: index}})}
-            /> */}
+            {/* text component */}
+            {
+              state.pageState.textArrayList.length > 0 ?
+                state.pageState.textArrayList.map((val, i) =>
+                  <TextElementComponent
+                    textElement={val}
+                    key={`${val.id}_${i}`}
+                    dispatch={dispatch}
+                    index={i}
+                  />
+                ) : null
+            }
           </div>
         </div>
       </div>
@@ -358,7 +351,7 @@ export default () => {
           <p className='nav'></p>
           <div
             className={state.pageState.controlPanelListInfo[1].isActive ? 'contorl-item contorl-item-active' : 'contorl-item'}
-            onClick={() => dispatch({type: 'floatMenu', state: {floatMenu: 1}})}
+            onClick={() => dispatch({type: ActionType.FLOAT_MENU, state: {floatMenu: 1}})}
           >
             <img src={state.pageState.controlPanelListInfo[1].imgUrl} />
             <span>{state.pageState.controlPanelListInfo[1].label}</span>
@@ -397,10 +390,10 @@ export default () => {
                 colorValue={state.pageState.canvasBacInputValue}
                 errorInfo={state.pageState.errorInfo}
                 // state 传入改变后的颜色值
-                onColorChange={(val: string) => dispatch({type: 'bacColor', state: {bacColor: val}})}
+                onColorChange={(val: string) => dispatch({type: ActionType.BACKGROUND_COLOR, state: {bacColor: val}})}
                 // state 传入错误提示info
-                onErrorInfoChange={(val: string) => dispatch({type: 'errorInfo', state: {errorInfo: val}})}
-                onActivityUrlChange={(v) => dispatch({type: 'activityUrl', state: {val: v}})}
+                onErrorInfoChange={(val: string) => dispatch({type: ActionType.ERROR_INFO, state: {errorInfo: val}})}
+                onActivityUrlChange={(v) => dispatch({type: ActionType.ACTIVITY_URL, state: {val: v}})}
               /> : null
           }
 
@@ -408,49 +401,17 @@ export default () => {
           {
             state.pageState.pageCheckedType === 'image' ?
               <CanvasControlImgCom
-              dispatch={dispatch}
-              activeImageElement={state.pageState.activeElement as ImgElementType}
-                // pageState={state}
-                // activeImgObject={state.pageState.activeElement}
-                // onImgElementFormRotateChange={(val: imgFormValueType) => dispatch({
-                //   type: 'imgElementFormRotate',
-                //   state: {
-                //     imgFormValue: val
-                //   }
-                // })}
-                // onImgElementFormIsEditChange={(val: boolean) => dispatch({
-                //   type: 'imgElementFormIsEdit',
-                //   state: {
-                //     isAllowEdit: val
-                //   }
-                // })}
-                // onImgElementPositionTopLeftChange={(val: PositionTopLeftType, activityElId: string) => dispatch({
-                //   type: 'imgElementPositionTopLeft',
-                //   state: {
-                //     formValue: val,
-                //     activityElId: activityElId
-                //   }
-                // })}
-                // onImgElementHieghtWidthChange={(val: any) => dispatch({
-                //   type: 'imgElementHieghtWidth',
-                //   state: {
-                //     formVal: {
-                //       ...val
-                //     }
-                //   }
-                // })}
+                dispatch={dispatch}
+                activeImageElement={state.pageState.activeElement as ImgElementType}
               /> : null
           }
+
+          {/* 文本元素控制面板 */}
           {
             state.pageState.pageCheckedType === 'text' ? 
               <CanvasControlTextCom
-                activeElement={state.pageState.activeElement}
-                onTopLeftZIndexChange={val => dispatch({type: 'textFormTopLeftZIndex', state: {val: val}})}
-                onTextComFormItemChange={(type, value) => dispatch({type: 'textFormItemChange', state: {type: type, value: value}})}
-                onFontSizeFontFamilyChange={(type, value) => dispatch({type: 'textComFontSizeFontFamily', state: {type: type, value: value}})}
-                onAllowEditedChange={() => dispatch({type: 'allowTextComEdited'})}
-                onTransformChange={(type, value) => dispatch({type: 'textComTramsformChange', state: {type: type, value: value}})}
-                onContentChange={(value) => dispatch({type: 'textComContentChage', state: {content: value}})}
+                dispatch={dispatch}
+                activeImageElement={state.pageState.activeElement as TextComStyleType}
               /> : null
           }
         </div>

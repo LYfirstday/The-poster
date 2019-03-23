@@ -92,7 +92,8 @@ let initTextElement: TextComStyleType = {
     minHeight: '21px',
     width: '300px',
     zIndex: 1,
-    color: '#111111'
+    color: '#111111',
+    lineHeight: 1.2
   },
   content: '选中文本元素，在控制板修改内容',
   isChecked: false,
@@ -105,38 +106,33 @@ let initTextElement: TextComStyleType = {
 };
 
 // action type
-export type ActionType = 'bacColor'    // 画布背景色板cahnge事件action
-                       | 'errorInfo'    // 输入错误背景色错误提示事件action
-                       | 'bacImgUrl'    // 上传背景色图片事件action
-                       | 'floatMenu'    // 右侧浮动菜单change事件action
-                       | 'activityUrl'    // 添加活动页面
+export enum ActionType {
+  BACKGROUND_COLOR = 'bacColor',    // 画布背景色板cahnge事件action
+  ERROR_INFO = 'errorInfo',    // 输入错误背景色错误提示事件action
+  BACKGROUND_IMAGE_URL = 'bacImgUrl',    // 上传背景色图片事件action
+  FLOAT_MENU = 'floatMenu',    // 右侧浮动菜单change事件action
+  ACTIVITY_URL = 'activityUrl',    // 添加活动页面
+  PAGE_ELEMENT_CHANGE = 'page_element_change',    // 页面选中元素改变 PageCheckedType
+  // ===========================图片元素action type
+  IMAGE_ELEMENT_MOUSE_DOWN = 'image_element_mouse_down',
+  IMAGE_ELEMENT_MOUSE_MOVE = 'image_element_mouse_move',
+  IMAGE_ELEMENT_DELETE = 'image_element_delete',
+  IMAGE_ELEMENT_SIZE_CHANGE_MOUSE_MOVE = 'image_element_size_change_mouse_move',
+  IMAGE_ELEMENT_TOP_LEFT_ZINDEX_TRANSFORM_HEIGHT_WIDTH_CHANGE = 'image_element_top_left_zIndex_transform_h_w_change',
+  // 图片元素表单元素值change事件action --- 角度变化
+  IMAGE_ELEMENT_ROTAET_CHANGE = 'image_element_rotate_change',
+  IMAGE_ELEMENT_IS_ALLOWED_EDIT = 'image_element_is_allowed_edit',
+  // ==============================文本元素action type
+  TEXT_ELEMENT_MOUSE_DOWN = 'text_element_mouse_down',
+  TEXT_ELEMENT_MOUSE_MOVE = 'text_element_mouse_move',
+  TEXT_ELEMENT_DELETE = 'text_element_delete',
+  TEXT_ELEMENT_SIZE_CHANGE_MOUSE_MOVE = 'text_element_size_change_mouse_move',
+  TEXT_ELEMENT_CONTROL_PANEL_FORM = 'text_element_control_panel_form',     // 文本元素控制板form表单数据change事件
 
-                       // ===========================图片元素action type
-                       | 'image_element_mouse_down'
-                       | 'image_element_mouse_move'
-                       | 'image_element_delete'
-                       | 'image_element_size_change_mouse_move'
-                       | 'image_element_top_left_zIndex_transform_h_w_change'
-                       | 'image_element_rotate_change'     // 图片元素表单元素值change事件action --- 角度变化
-                       | 'image_element_is_allowed_edit'
-                       | 'page_element_change'    // 页面选中元素改变 PageCheckedType
-
-                       // ==============================文本元素action type
-                       | 'text_element_mouse_down'
-                       | 'text_element_mouse_move'
-                       | 'text_element_delete'
-                       | 'text_element_size_change_mouse_move'
-                       | 'fontFamily'
-                       | 'fontSize'
-                       | 'textFormTopLeftZIndex'    // 文本元素Top Left ZIndex三个属性表单变化时的action
-                       | 'textFormItemChange'   // 文本元素自有属性表单值变化时的action
-                       | 'textComFontSizeFontFamily'    // 文本元素字号、字体改变action
-                       | 'allowTextComEdited'  // 是否允许文本元素可编辑
-                       | 'textComTramsformChange'    // 文本元素旋转角度变化action
-                       | 'textComContentChage'  //  文本内容变化
-                       | 'request_start'
-                       | 'request_end'
-                       | 'activityType_change'  // 活动类型变化
+  REQUEST_START = 'request_start',
+  REQUEST_END = 'request_end',
+  ACTIVITY_TYPE_CHANGE = 'activityType_change',  // 活动类型变化
+}
 
 export interface ActionTypeInfo {
   type: ActionType,
@@ -157,7 +153,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
 
   switch (action.type) {
     // 画布样式action================================================begin
-    case 'bacColor':
+    case ActionType.BACKGROUND_COLOR:
       return {
         ...state,
         pageState: {
@@ -166,7 +162,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
           canvasBacInputValue: action.state.bacColor
         }
       };
-    case 'errorInfo':
+    case ActionType.ERROR_INFO:
       return {
         ...state,
         pageState: {
@@ -174,7 +170,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
           errorInfo: action.state.errorInfo
         }
       };
-    case 'bacImgUrl':
+    case ActionType.BACKGROUND_IMAGE_URL:
       return {
         ...state,
         pageState: {
@@ -183,7 +179,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
           canvasBackground: `url('${action.state.bacImgUrl}') no-repeat center #fff`
         }
       };
-    case 'activityUrl':
+    case ActionType.ACTIVITY_URL:
       return {
         ...state,
         pageState: {
@@ -194,15 +190,14 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
     // 画布样式action================================================end
 
     // 右侧浮动菜单action================================================begin
-    case 'floatMenu':
+    case ActionType.FLOAT_MENU:
       let list = state.pageState.controlPanelListInfo;
       list.map((val, i) => {
         val.isActive = action.state.floatMenu === i ? true : false;
       });
       switch (action.state.floatMenu) {
         case 0:
-          let addImgList = state.pageState.imgsArrayList;
-          let newImgEL = {
+          let newImgEL: ImgElementType = {
             elementType: 'image',
             id: getElementDomId('image'),
             isChecked: false,
@@ -226,7 +221,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
           }
           newImgEL.imgUrl = action.state.imgUrl;
           newImgEL.id = getElementDomId('image');
-          addImgList.push(newImgEL);
+          imageElementsList.push(newImgEL);
 
           return {
             ...state,
@@ -234,7 +229,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
               ...state.pageState,
               controlPanelListInfo: list,
               imgsArrayList: [
-                ...addImgList
+                ...imageElementsList
               ]
             }
           }
@@ -266,15 +261,12 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         default:
           return {
             ...state,
-            pageState: {
-              ...state.pageState,
-            }
           };
       }
     // 右侧浮动菜单action================================================end
 
     // 图片元素action================================================begin
-    case 'image_element_mouse_down':
+    case ActionType.IMAGE_ELEMENT_MOUSE_DOWN:
       let activeElement = {};
       imageElementsList.map(val => {
         if (action.state.elId === val.id) {
@@ -311,7 +303,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         }
       }
 
-    case 'image_element_mouse_move':
+    case ActionType.IMAGE_ELEMENT_MOUSE_MOVE:
       let thisImageElementMM = imageElementsList.filter(val => {
         return action.state.elId === val.id;
       })[0];
@@ -332,7 +324,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         }
       }
 
-    case 'image_element_delete':
+    case ActionType.IMAGE_ELEMENT_DELETE:
       imageElementsList.splice(action.state.index, 1);
 
       return {
@@ -345,7 +337,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         }
       }
 
-    case 'image_element_size_change_mouse_move':
+    case ActionType.IMAGE_ELEMENT_SIZE_CHANGE_MOUSE_MOVE:
       let thisSizeChangeEl = imageElementsList.filter(val => {
         return action.state.elId === val.id;
       })[0];
@@ -364,7 +356,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         }
       }
 
-    case 'image_element_rotate_change':
+    case ActionType.IMAGE_ELEMENT_ROTAET_CHANGE:
       // 获取state中的该元素 isChecked为true(当触发mousedown事件时，isChecked为true),所以提交的form表单为选中的元素
       let thisRotateChangeElement = imageElementsList.filter(val => {
         return action.state.elId === val.id;
@@ -384,7 +376,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         }
       };
 
-    case 'image_element_is_allowed_edit':
+    case ActionType.IMAGE_ELEMENT_IS_ALLOWED_EDIT:
       let thisAllowedEditElement = imageElementsList.filter(val => {
         return action.state.elId === val.id;
       })[0];
@@ -400,7 +392,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         }
       }
 
-    case 'image_element_top_left_zIndex_transform_h_w_change':
+    case ActionType.IMAGE_ELEMENT_TOP_LEFT_ZINDEX_TRANSFORM_HEIGHT_WIDTH_CHANGE:
       let type = action.state.type;
       let changedValue = action.state.value;
 
@@ -441,7 +433,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
       };
 
     // 点击页面空白处，图片元素和文本元素取消选中状态
-    case 'page_element_change':
+    case ActionType.PAGE_ELEMENT_CHANGE:
       let typeValue = action.state.value;
       imageElementsList.map(val => {
         val.isChecked = false;
@@ -467,7 +459,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
     // 图片元素action================================================end
 
     // 文本元素action==============================================================begin
-    case 'text_element_mouse_down':
+    case ActionType.TEXT_ELEMENT_MOUSE_DOWN:
       let activeTextElement = {};
       textElementsList.map(val => {
         if (action.state.elId === val.id) {
@@ -504,7 +496,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         }
       }
 
-    case 'text_element_mouse_move':
+    case ActionType.TEXT_ELEMENT_MOUSE_MOVE:
       let thisTextElementMM = textElementsList.filter(val => {
         return action.state.elId === val.id;
       })[0];
@@ -525,7 +517,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         }
       }
 
-    case 'text_element_delete':
+    case ActionType.TEXT_ELEMENT_DELETE:
       textElementsList.splice(action.state.index, 1);
 
       return {
@@ -538,7 +530,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         }
       }
 
-    case 'text_element_size_change_mouse_move':
+    case ActionType.TEXT_ELEMENT_SIZE_CHANGE_MOUSE_MOVE:
       let thisSizeChangeTextEl = textElementsList.filter(val => {
         return action.state.elId === val.id;
       })[0];
@@ -558,194 +550,64 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         }
       }
 
-    case 'textFormTopLeftZIndex':
-      let changeValue = action.state.val;
-      let itemChangeElZindexList = state.pageState.textArrayList;
-      let itemChangeEl = itemChangeElZindexList.filter(val => {
-        return val.isChecked === true;
+    case ActionType.TEXT_ELEMENT_CONTROL_PANEL_FORM:
+      let thisTextElement = textElementsList.filter(val => {
+        return action.state.elId === val.id;
       })[0];
-      let outerValue = {
-        top: `${parseInt(changeValue.top) - 20}px`,
-        left: `${parseInt(changeValue.left) - 20}px`,
-        zIndex: parseInt(changeValue.zIndex),
-      };
-      let innerValue = {
-        top: `${parseInt(changeValue.top)}px`,
-        left: `${parseInt(changeValue.left)}px`,
-        zIndex: parseInt(changeValue.zIndex),
-      };
-      itemChangeEl.textElementOuterType = {
-        ...itemChangeEl.textElementOuterType,
-        ...outerValue
-      };
-      itemChangeEl.elementStyles = {
-        ...itemChangeEl.elementStyles,
-        ...innerValue
-      };
+      let styleType = action.state.styleType;
+      let value = action.state.value;
 
-      return {
-        ...state,
-        pageState: {
-          ...state.pageState,
-          textArrayList: [
-            ...itemChangeElZindexList
-          ]
-        }
-      };
-
-    case 'textFormItemChange':
-      let formItemList = state.pageState.textArrayList;
-      let formItemChangeEl = formItemList.filter(val => {
-        return val.isChecked === true;
-      })[0];
-      // 获取字体属性按钮类型
-      let formItemType = action.state.type;
-      // 获取控制字体属性选中列表
-      let fontStyleImgList = formItemChangeEl.fontStyleImgList;
-      
-      // 当点击的按钮类型为textAlign时，修改按钮激活状态，三个按钮只能有一个处于激活
-      if (formItemType === 'textAlign') {
-        switch (action.state.value) {
-          case 'left':
-            fontStyleImgList[3].isChecked = true;
-            fontStyleImgList[4].isChecked = false;
-            fontStyleImgList[5].isChecked = false;
-            break;
-          case 'center':
-            fontStyleImgList[3].isChecked = false;
-            fontStyleImgList[4].isChecked = true;
-            fontStyleImgList[5].isChecked = false;
-            break;
-          case 'right':
-            fontStyleImgList[3].isChecked = false;
-            fontStyleImgList[4].isChecked = false;
-            fontStyleImgList[5].isChecked = true;
-            break;
-          default:
-            break;
-        }
-        formItemChangeEl.elementStyles.textAlign = action.state.value;
-      } else if ('minHeight' === formItemType || 'width' === formItemType || 'color' === formItemType) {
-        formItemChangeEl.elementStyles[formItemType] = formItemType === 'color' ? action.state.value : `${action.state.value}px`;
+      if (styleType === 'content') {
+        thisTextElement.content = value;
+      } else if (styleType === 'transform') {
+        thisTextElement.textElementOuterType.transform = value;
+      } else if (styleType === 'isAllowEdit') {
+        thisTextElement.isAllowEdit = Boolean(value);
+      } else if (styleType === 'width' || styleType === 'minHeight') {
+        thisTextElement.elementStyles = {
+          ...thisTextElement.elementStyles,
+          [styleType]: `${value}px`
+        };
+      } else if (styleType === 'top' || styleType === 'left' || styleType === 'zIndex') {
+        thisTextElement.elementStyles = {
+          ...thisTextElement.elementStyles,
+          [styleType]: styleType === 'zIndex' ? parseInt(value) : `${value}px`
+        };
+        // 因为外部容器有 20的padding  所以外部容器位置需要减去20
+        thisTextElement.textElementOuterType = {
+          ...thisTextElement.textElementOuterType,
+          [styleType]: styleType === 'zIndex' ? parseInt(value) : `${parseInt(value) - 20}px`
+        };
       } else {
-        let activeFontStyle = fontStyleImgList.filter(val => {
-          return val.type === formItemType;
-        })[0];
-        // 如果按钮即将设为false，未激活状态，则将样式取消
-        activeFontStyle.isChecked = !activeFontStyle.isChecked;
-        if ((activeFontStyle.isChecked) === false) {
-          switch (formItemType) {
-            case 'fontWeight':
-              formItemChangeEl.elementStyles.fontWeight = 500;
-              break;
-            case 'textDecoration':
-              formItemChangeEl.elementStyles.textDecoration = 'none';
-              break;
-            case 'fontStyle':
-              formItemChangeEl.elementStyles.fontStyle = '';
-              break;
-            default:
-              break;
-          }
-        } else {
-          formItemChangeEl.elementStyles[formItemType] = `${action.state.value}`;
-        }
+        thisTextElement.elementStyles = {
+          ...thisTextElement.elementStyles,
+          [styleType]: value
+        };
       }
-      formItemChangeEl.elementStyles = {
-        ...formItemChangeEl.elementStyles,
-      };
-
-      return {
-        ...state,
-        pageState: {
-          ...state.pageState,
-          textArrayList: [
-            ...formItemList
-          ]
-        }
-      };
-
-    case 'textComFontSizeFontFamily':
-      let fontStyleList = state.pageState.textArrayList;
-      let fontStyleChangeEl = fontStyleList.filter(val => {
-        return val.isChecked === true;
-      })[0];
-      let fontStyleType = action.state.type;
-      fontStyleChangeEl.elementStyles[fontStyleType] = action.state.value;
-
-      return {
-        ...state,
-        pageState: {
-          ...state.pageState,
-          textArrayList: [
-            ...fontStyleList
-          ]
-        }
-      };
-
-    case 'allowTextComEdited':
-      let canEditedList = state.pageState.textArrayList;
-      let canEditedEl = canEditedList.filter(val => {
-        return val.isChecked === true;
-      })[0];
-      canEditedEl.isAllowEdit = !canEditedEl.isAllowEdit;
-
-      return {
-        ...state,
-        pageState: {
-          ...state.pageState,
-          textArrayList: [
-            ...canEditedList
-          ]
-        }
-      };
-
-    case 'textComTramsformChange':
-      let transformList = state.pageState.textArrayList;
-      let transformEl = transformList.filter(val => {
-        return val.isChecked === true;
-      })[0];
-      transformEl.textElementOuterType.transform = action.state.value;
-
-      return {
-        ...state,
-        pageState: {
-          ...state.pageState,
-          textArrayList: [
-            ...transformList
-          ]
-        }
-      };
       
-    case 'textComContentChage':
-      let contentList = state.pageState.textArrayList;
-      let contentEl = contentList.filter(val => {
-        return val.isChecked === true;
-      })[0];
-      contentEl.content = action.state.content;
-
       return {
         ...state,
         pageState: {
           ...state.pageState,
           textArrayList: [
-            ...contentList
+            ...textElementsList
           ]
         }
       }
+
     // 文本元素action==============================================================end
 
-    case 'request_start':
+    case ActionType.REQUEST_START:
       return {
         ...state,
         isLoading: true
       }
-    case 'request_end':
+    case ActionType.REQUEST_END:
       return {
         ...state,
         isLoading: false
       }
-    case 'activityType_change':
+    case ActionType.ACTIVITY_TYPE_CHANGE:
       return {
         ...state,
         activityTypeId: action.state.typeId

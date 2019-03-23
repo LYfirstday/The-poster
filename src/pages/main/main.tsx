@@ -53,6 +53,12 @@ const UserDetails = Loadable({
   timeout: 8000
 });
 
+const Test = Loadable({
+  loader: () => import('./../test'),
+  loading: Loading,
+  timeout: 8000
+});
+
 export default (props: any) => {
 
   // 用来控制导航栏的显示 隐藏
@@ -80,6 +86,7 @@ export default (props: any) => {
             <Route path='/index/activity' component={ActivityManagement}/>
             <Route path='/index/posters' component={PosterManagement}/>
             <Route path='/index/create' component={CreatePoster}/>
+            <Route path='/index/test' component={Test}/>
             <Route path='/index' render={ () => {return <Redirect to='/index/users'/>} }/>
           </Switch>
         </HashRouter>

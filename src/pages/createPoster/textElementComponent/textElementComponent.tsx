@@ -2,7 +2,7 @@
 import * as React from 'react';
 import './textElementComponent.less';
 import { TextComStyleType } from './../poster';
-import { ActionTypeInfo } from './../createPosterReducers/createPosterReducers';
+import { ActionTypeInfo, ActionType } from './../createPosterReducers/createPosterReducers';
 import { rotateValueFilter } from './../../../static/ts/tools';
 
 export interface TextElementComponentPropsType {
@@ -22,7 +22,7 @@ const TextElementComponent = (props: TextElementComponentPropsType) => {
     let distanceY = e.clientY - out.offsetTop;
     let distanceX = e.clientX - out.offsetLeft;
     props.dispatch({
-      type: 'text_element_mouse_down',
+      type: ActionType.TEXT_ELEMENT_MOUSE_DOWN,
       state: {elId: id, distanceY: distanceY, distanceX: distanceX}
     });
     document.onmousemove = onTextComMousemove.bind(out, id, distanceY, distanceX);
@@ -34,7 +34,7 @@ const TextElementComponent = (props: TextElementComponentPropsType) => {
     let topMove = `${e.clientY - props.textElement.distanceY}px`;
     let leftMove = `${e.clientX - props.textElement.distanceX}px`;
     props.dispatch({
-      type: 'text_element_mouse_move',
+      type: ActionType.TEXT_ELEMENT_MOUSE_MOVE,
       state: {elId: id, topMove: topMove, leftMove: leftMove}
     });
   }
@@ -53,7 +53,7 @@ const TextElementComponent = (props: TextElementComponentPropsType) => {
     let distanceY = e.clientY;
     let distanceX = e.clientX;
     props.dispatch({
-      type: 'text_element_mouse_down',
+      type: ActionType.TEXT_ELEMENT_MOUSE_DOWN,
       state: {elId: id, distanceY: distanceY, distanceX: distanceX}
     });
 
@@ -112,7 +112,7 @@ const TextElementComponent = (props: TextElementComponentPropsType) => {
     }
 
     props.dispatch({
-      type: 'text_element_size_change_mouse_move',
+      type: ActionType.TEXT_ELEMENT_SIZE_CHANGE_MOUSE_MOVE,
       state: {
         elId: id,
         width: newWidth,
@@ -129,12 +129,6 @@ const TextElementComponent = (props: TextElementComponentPropsType) => {
   }
   // 文本元素右下角宽高控制图片事件监听函数===================================end
 
-  // 图片元素左上角宽删除图片事件监听函数===================================begin
-  // function onDeleteImgClick(index: number) {
-  //   props.onTextComDeleteImgClick(index);
-  // }
-  // 图片元素左上角宽删除图片事件监听函数===================================end
-
   return (
     <div
       id={props.textElement.id}
@@ -143,7 +137,7 @@ const TextElementComponent = (props: TextElementComponentPropsType) => {
     >
       <p
         className={props.textElement.isChecked ? 'text-operation-delete text-operation-active' : 'text-operation-delete'}
-        onClick={() => props.dispatch({type: 'text_element_delete', state: {index: props.index}})}
+        onClick={() => props.dispatch({type: ActionType.TEXT_ELEMENT_DELETE, state: {index: props.index}})}
       ></p>
       <p
         className={props.textElement.isChecked ? 'text-operation-size-change text-operation-active' : 'text-operation-size-change'}

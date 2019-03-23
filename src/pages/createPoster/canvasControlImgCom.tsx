@@ -9,7 +9,7 @@ import {
   ImgOuterElementStyleType,
   ImgElementType,
 } from './poster';
-import { ActionTypeInfo } from './createPosterReducers/createPosterReducers';
+import { ActionTypeInfo, ActionType } from './createPosterReducers/createPosterReducers';
 
 export type imgFormValueType = Partial<ImgElementStyleType> | Partial<ImgOuterElementStyleType> | {isAllowEdit: boolean};
 
@@ -35,7 +35,7 @@ const CanvasControlImgCom = (props: ImageElementControlPanelPropsType) => {
     let rotate = `rotate(${rotateValue}deg)`;
     setRotate(val);
     props.dispatch({
-      type: 'image_element_rotate_change',
+      type: ActionType.IMAGE_ELEMENT_ROTAET_CHANGE,
       state: {
         elId: props.activeImageElement.id,
         value: rotate
@@ -66,7 +66,7 @@ const CanvasControlImgCom = (props: ImageElementControlPanelPropsType) => {
   // 是否可编辑change事件
   function onIsAllowEditChange(val: boolean) {
     props.dispatch({
-      type: 'image_element_is_allowed_edit',
+      type: ActionType.IMAGE_ELEMENT_IS_ALLOWED_EDIT,
       state: {
         elId: props.activeImageElement.id,
         value: val
@@ -74,7 +74,7 @@ const CanvasControlImgCom = (props: ImageElementControlPanelPropsType) => {
     });
   }
 
-  // 元素位置、层级关系form表单元素change事件
+  // 元素位置、层级关系宽高等form表单元素change事件
   const zIndexInputRef = React.useRef<HTMLInputElement | null>(null);
   const rotateInputRef = React.useRef<HTMLInputElement | null>(null);
   const heightInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -83,9 +83,9 @@ const CanvasControlImgCom = (props: ImageElementControlPanelPropsType) => {
   const leftInputRef = React.useRef<HTMLInputElement | null>(null);
 
   function onZIndexTopLeftHeightWidthChange(type: string, value: string, thisRef: React.MutableRefObject<HTMLInputElement | null>) {
-    let reNum = /^[0-9]+.?[0-9]*$/;
     if (type === 'transform') {
-      if (value === '' || value === '-' || !reNum.test(value) || parseInt(value) > 180 || parseInt(value) < -180) {
+      let reNum = /^[-\\+]?([0-9]+\\.?)?[0-9]+$/;
+      if (value === '' || !reNum.test(value) || parseInt(value) > 180 || parseInt(value) < -180) {
         setErrorInfo('请输入-180 到 180 的数字!');
         return;
       }
@@ -96,11 +96,12 @@ const CanvasControlImgCom = (props: ImageElementControlPanelPropsType) => {
       }
     } else if (type === 'zIndex') {
       let re = /^[1-9]+[0-9]*]*$/;
-      if (!re.test(value)) {
-        setErrorInfo('请输入大于0的正数!');
+      if (!re.test(value) || parseInt(value) > 999) {
+        setErrorInfo('请输入大于0，小于999的正数!');
         return;
       }
     } else {
+      let reNum = /^[0-9]+.?[0-9]*$/;
       if (value === '' || value === '-' || !reNum.test(value)) {
         setErrorInfo('请输入数字!');
         return;
@@ -110,7 +111,7 @@ const CanvasControlImgCom = (props: ImageElementControlPanelPropsType) => {
     setErrorInfo('');
     thisRef.current!.value = value;
     props.dispatch({
-      type: 'image_element_top_left_zIndex_transform_h_w_change',
+      type: ActionType.IMAGE_ELEMENT_TOP_LEFT_ZINDEX_TRANSFORM_HEIGHT_WIDTH_CHANGE,
       state: {
         elId: props.activeImageElement.id,
         value: value,

@@ -35,7 +35,7 @@ export default (props: any) => {
           } 
         };
         storage.setItem('userInfo', JSON.stringify(userInfo));
-        props.history.push('/index')
+        props.history.push('/index');
       } else {
         setErrorInfo(res.description);
       }
@@ -70,7 +70,7 @@ export default (props: any) => {
             />
             <p className='error-info'>{errorInfo}</p>
             <Button
-              onClick={doLogin}
+              onClick={() => doLogin()}
               variant="contained"
               color="primary"
               type='submit'

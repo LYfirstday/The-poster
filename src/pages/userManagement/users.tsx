@@ -58,7 +58,7 @@ export default (props: any) => {
         theadeData={theadeData}
       >
         {state.data.map((val:any, i: number) =>
-          <tr key={i}>
+          <tr key={`${val.label}_${i}`}>
             <td>{val.label}</td>
             <td>{val.label1}</td>
             <td>{val.label2}</td>

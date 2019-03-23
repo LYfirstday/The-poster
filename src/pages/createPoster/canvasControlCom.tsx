@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { Button, TextField, Select, MenuItem, InputLabel, FormControl, } from '@material-ui/core';
 import { ActivityData } from './../activityManagement/activityReducer/activityReducer';
-import { ActionTypeInfo } from './createPosterReducers/createPosterReducers';
+import { ActionTypeInfo, ActionType } from './createPosterReducers/createPosterReducers';
 import doService from './../../static/ts/axios';
 import Message from './../../components/message/message';
 
@@ -71,7 +71,7 @@ export default (props: CanvasComPropsType) => {
 
   // 选择活动类型select change事件
   function onActivityTypeChange(typeId: string) {
-    props.dispatch({ type: 'activityType_change', state: { typeId: typeId } });
+    props.dispatch({ type: ActionType.ACTIVITY_TYPE_CHANGE, state: { typeId: typeId } });
   }
 
   React.useEffect(() => {
@@ -92,7 +92,7 @@ export default (props: CanvasComPropsType) => {
 
   // 上传背景图
   function uploadBacImg() {
-    props.dispatch({ type: 'request_start' });
+    props.dispatch({ type: ActionType.REQUEST_START });
     let input = document.querySelector('#uploadBacImg') as HTMLInputElement;
     let file = input.files![0];
     let fileType = file.type.split('/')[1];
@@ -110,11 +110,11 @@ export default (props: CanvasComPropsType) => {
     formData.append('file', file);
     doService('/v1/file/upload', 'POST', formData).then(res => {
       if (res.code === 200) {
-        props.dispatch({ type: 'bacImgUrl', state: {bacImgUrl: res.values} });
+        props.dispatch({ type: ActionType.BACKGROUND_IMAGE_URL, state: {bacImgUrl: res.values} });
       } else {
         setMessage({isMessage: true, messageInfo: res.description});
       }
-      props.dispatch({ type: 'request_end' });
+      props.dispatch({ type: ActionType.REQUEST_END });
     });
   }
 
@@ -164,11 +164,6 @@ export default (props: CanvasComPropsType) => {
             value={props.pageState.activityTypeId}
             onChange={(e) => onActivityTypeChange(e.target.value)}
           >
-            {/* {
-              fontFamily.map((val, i) =>
-                <MenuItem value={val.value} key={`${i}_${val.value}`}>{val.label}</MenuItem>
-              )
-            } */}
             {
               props.activityList.length > 0 ?
                 props.activityList.map((val, i) =>
@@ -201,6 +196,10 @@ export default (props: CanvasComPropsType) => {
       <div className='item'>
         <span className='important-tips'>*</span>
         <strong className='important-content'> 支持上传小于2m的png/jpg/jpeg格式的图片，建议压缩后上传</strong>
+      </div>
+      <div className='item'>
+        <span className='important-tips'>*</span>
+        <strong className='important-content'> HTML DOM和canvas在渲染有细微差别，位置有一定误差</strong>
       </div>
       <Message
         isOpen={onMessage.isMessage}

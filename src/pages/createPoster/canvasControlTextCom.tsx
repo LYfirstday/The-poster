@@ -3,16 +3,13 @@ import * as React from 'react';
 import './canvasControlImgCom.less';
 import { Select, MenuItem, InputLabel, FormControl, Switch } from '@material-ui/core';
 import Slider from '@material-ui/lab/Slider';
-import { rotateValueFilter, oppositeRotateValueFilter } from './../../static/ts/tools';
+import {  rotateValueFilter, oppositeRotateValueFilter } from './../../static/ts/tools';
+import { ActionTypeInfo, ActionType } from './createPosterReducers/createPosterReducers';
+import { TextComStyleType } from './poster'
 
-export interface ControlTextPropsType {
-  activeElement: any,
-  onTopLeftZIndexChange: (val: any) => void,
-  onTextComFormItemChange: (type: string, value: string | number) => void,
-  onFontSizeFontFamilyChange: (type: string, value: string) => void
-  onAllowEditedChange: () => void,
-  onTransformChange: (type: string, value: string) => void,  // type: input还是slider;value: 数值
-  onContentChange: (value: string) => void
+export interface TextElementControlPanelPropsType {
+  dispatch: React.Dispatch<ActionTypeInfo>,
+  activeImageElement: TextComStyleType
 }
 
 export type FontSizeFontFamilyType = {
@@ -132,178 +129,104 @@ const fontSize: FontSizeFontFamilyType[] = [
   },
 ];
 
-export default (props: ControlTextPropsType) => {
+export default (props: TextElementControlPanelPropsType) => {
   // 错误信息
   const [errorInfo, setErrorInfo] = React.useState('');
 
-  // form表单容器和文本元素共有属性 top, left, zIndex
-  // 这里应该显示的是真实的text元素位置和zIndex, 外部容器值在action中计算
-  const [commomStyle, setCommomStyle] = React.useState({
-    top: `${parseInt(props.activeElement.elementStyles.top)}`,
-    left: `${parseInt(props.activeElement.elementStyles.left)}`,
-    zIndex: `${parseInt(props.activeElement.elementStyles.zIndex)}`
-  });
-
-  //  top, left, zIndex三个值change事件
-  function onTopLeftZIndexChange(type: string, value: string) {
-    setCommomStyle({
-      ...commomStyle,
-      [type]: value
-    });
-  }
-
-  function onTopLeftZIndexBlur(type: string) {
-    let thisValue = commomStyle[type];
-    if (isNaN(parseInt(thisValue))) {
-      setErrorInfo('请输入正、负数字');
-      return;
-    } else {
-      setErrorInfo('');
-    }
-    props.onTopLeftZIndexChange(commomStyle);
-  }
-
-  // 文本元素自有属性form事件
-  const [textComFormItem, setTextComFormItem] = React.useState({
-    fontStyle: props.activeElement.elementStyles.fontStyle,
-    fontWeight: props.activeElement.elementStyles.fontWeight,
-    minHeight: `${parseInt(props.activeElement.elementStyles.minHeight)}`,
-    width: `${parseInt(props.activeElement.elementStyles.width)}`,
-    textAlign: props.activeElement.elementStyles.textAlign,
-    textDecoration: props.activeElement.elementStyles.textDecoration,
-  });
-
-  // 自有属性form change事件
-  function onTextComFormItemChange(type: string, val: string | number) {
-    setTextComFormItem({
-      ...textComFormItem,
-      [type]: val
-    });
-    if (!(type === 'height' || type === 'width')) {
-      props.onTextComFormItemChange(type, val);
-    }
-  }
-
-  function ontextComFormItemBlur(type: string) {
-    let thisValue = textComFormItem[type];
-    if (type === 'height' || type === 'width') {
-      if (isNaN(parseInt(thisValue)) || parseInt(thisValue) <= 0) {
-        setErrorInfo('请输入正数字');
-        return;
-      } else {
-        setErrorInfo('');
-      }
-    }
-    props.onTextComFormItemChange(type, thisValue);
-  }
-
   React.useEffect(() => {
-    setCommomStyle({
-      top: `${parseInt(props.activeElement.elementStyles.top)}`,
-      left: `${parseInt(props.activeElement.elementStyles.left)}`,
-      zIndex: `${parseInt(props.activeElement.elementStyles.zIndex)}`
-    });
-    setTextComFormItem({
-      fontStyle: props.activeElement.elementStyles.fontStyle,
-      fontWeight: props.activeElement.elementStyles.fontWeight,
-      minHeight: `${parseInt(props.activeElement.elementStyles.minHeight)}`,
-      width: `${parseInt(props.activeElement.elementStyles.width)}`,
-      textAlign: props.activeElement.elementStyles.textAlign,
-      textDecoration: props.activeElement.elementStyles.textDecoration,
-    });
-    setTransform(`${rotateValueFilter(props.activeElement.textElementOuterType.transform)}`);
-    setRotate(oppositeRotateValueFilter(props.activeElement.textElementOuterType.transform));
-    setTextInputColor(props.activeElement.elementStyles.color);
-    setTextColor(props.activeElement.elementStyles.color);
-    testareaRef.current!.value = props.activeElement.content;
-  },[
-    props.activeElement.elementStyles.top,
-    props.activeElement.elementStyles.left,
-    props.activeElement.elementStyles.zIndex,
-    props.activeElement.elementStyles.fontFamily,
-    props.activeElement.elementStyles.fontSize,
-    props.activeElement.elementStyles.fontStyle,
-    props.activeElement.elementStyles.fontWeight,
-    props.activeElement.elementStyles.minHeight,
-    props.activeElement.elementStyles.width,
-    props.activeElement.elementStyles.textAlign,
-    props.activeElement.elementStyles.textDecoration,
-    props.activeElement.elementStyles.color,
-    props.activeElement.textElementOuterType.transform,
-    props.activeElement.content
+    let thisElementStyle = props.activeImageElement.elementStyles;
+    fontColorInput.current!.value = thisElementStyle.color;
+    fontColorSelect.current!.value = thisElementStyle.color;
+    testareaRef.current!.value = props.activeImageElement.content;
+    widthRef.current!.value = `${parseInt(thisElementStyle.width)}`;
+    minHeightRef.current!.value = `${parseInt(thisElementStyle.minHeight)}`;
+    topRef.current!.value = `${parseInt(thisElementStyle.top)}`;
+    leftRef.current!.value = `${parseInt(thisElementStyle.left)}`;
+    isAllowEditRef.current!.checked = Boolean(props.activeImageElement.isAllowEdit);
+    rotateInputRef.current!.value = rotateValueFilter(props.activeImageElement.textElementOuterType.transform);
+    setSliderValue(oppositeRotateValueFilter(props.activeImageElement.textElementOuterType.transform));
+  }, [
+    props.activeImageElement,
+    props.activeImageElement.elementStyles.color,
+    props.activeImageElement.content,
+    props.activeImageElement.elementStyles.width,
+    props.activeImageElement.elementStyles.minHeight,
+    props.activeImageElement.elementStyles.top,
+    props.activeImageElement.elementStyles.left,
+    props.activeImageElement.isAllowEdit,
+    props.activeImageElement.textElementOuterType.transform
   ]);
 
-  // 字体、字号change事件
-  function onFontSizeFontFamilyChange(type: string, e: React.ChangeEvent<HTMLSelectElement>) {
-    props.onFontSizeFontFamilyChange(type, e.target.value);
-  }
-
-  // 文本元素旋转change事件，rotate style在外部容器上
-  const [transform, setTransform] = React.useState(`${rotateValueFilter(props.activeElement.textElementOuterType.transform)}`);
-
-  // 旋转角度input事件
-  function onTextComRotateChange(type: string, value: string) {
-    setTransform(value);
-  }
-  // input blur
-  function onTextComRotateBlur() {
-    if (parseInt(transform) > 180 || parseInt(transform) < -180) {
-      setErrorInfo('请输入-180 到 180之间的数字');
-      return;
-    } else {
-      setErrorInfo('');
-    }
-    props.onTransformChange('input', `rotate(${transform}deg)`);
-  }
-
-  // 旋转角度滑块事件
-  const [rotate, setRotate] = React.useState(oppositeRotateValueFilter(props.activeElement.textElementOuterType.transform));
-
-  function onSliderRotateChange(type: string, val: number) {
-    // 将滑块在50值中的比例换算到180中，得出角度数值
-    let rotateValue = (50 - val)/50 * 180;
-    let rotate = `rotate(${rotateValue}deg)`;
-    setRotate(val);
-    props.onTransformChange(type, rotate);
-  }
-  
-  // 调色板input change事件
-  const [textInputColor, setTextInputColor] = React.useState(props.activeElement.elementStyles.color);
-
-  function onTextInputColorChange(e: any) {
-    setTextInputColor(e.target.value);
-    setTextColor(e.target.value);
-    props.onTextComFormItemChange('color', e.target.value);
-    setErrorInfo('');
-  }
-  // 文本颜色input change事件
-  const [textColor, setTextColor] = React.useState('#111111')
-
-  function onTextColroChange(e: any) {
-    setTextColor(e.target.value);
-  }
-
-  function onTextColroBlur() {
-    if (textColor.length === 7) {
-      if (textColor.startsWith('#')) {
-        props.onTextComFormItemChange('color', textColor);
-        setErrorInfo('');
-      } else {
-        setErrorInfo('请输入正确的颜色值,以#开头 + 6位颜色值');
-      }
-    } else {
-      setErrorInfo('请输入正确的颜色值,以#开头 + 6位颜色值');
-    }
-  }
-
-  // 文本内容改变
-
+  const fontFamilyRef = React.useRef<HTMLInputElement | null>(null);
+  const fontSizeRef = React.useRef<HTMLInputElement | null>(null);
+  const fontColorSelect = React.useRef<HTMLInputElement | null>(null);
+  const fontColorInput = React.useRef<HTMLInputElement | null>(null);
   const testareaRef = React.useRef<HTMLTextAreaElement | null>(null);
+  const widthRef = React.useRef<HTMLInputElement | null>(null);
+  const minHeightRef = React.useRef<HTMLInputElement | null>(null);
+  const topRef = React.useRef<HTMLInputElement | null>(null);
+  const leftRef = React.useRef<HTMLInputElement | null>(null);
+  const isAllowEditRef = React.useRef<HTMLInputElement | null>(null);
+  const rotateInputRef = React.useRef<HTMLInputElement | null>(null);
 
-  function onContentBlur() {
-    props.onContentChange(testareaRef.current!.value);
+  function onTextElementOwnStyleChange(type: string, value: string, ref: React.MutableRefObject<HTMLInputElement | HTMLTextAreaElement | null>) {
+
+    if (type === 'color') {
+      if (value === '' || !value.startsWith('#') || value.length !== 7) {
+        setErrorInfo('请输入有效的7位颜色值;如 #000000');
+        return;
+      }
+    }
+    if (type === 'width' || type === 'minHeight' || type === 'zIndex') {
+      let re = /^[1-9]+[0-9]*]*$/;
+      if (value === '' || !re.test(value)) {
+        setErrorInfo('请输入大于0的数字');
+        return;
+      }
+    }
+    if (type === 'top' || type === 'left') {
+      let reNum = /^[0-9]+.?[0-9]*$/;
+      if (value === '' || !reNum.test(value)) {
+        setErrorInfo('请输入正确的数字');
+        return;
+      }
+    }
+    if (type === 'transform') {
+      let reNum = /^[-\\+]?([0-9]+\\.?)?[0-9]+$/;
+      if (value === '' || !reNum.test(value) || parseInt(value) > 180 || parseInt(value) < -180) {
+        setErrorInfo('请输入-180 至 180的数值');
+        return;
+      }
+      value = `rotate(${value}deg)`;
+    }
+
+    type === 'isAllowEdit' || type === 'transform' ? null : ref.current!.value = value;
+
+    setErrorInfo('');
+    props.dispatch({
+      type: ActionType.TEXT_ELEMENT_CONTROL_PANEL_FORM,
+      state: {
+        elId: props.activeImageElement.id,
+        styleType: type,
+        value: value
+      }
+    });  
   }
 
+  const [sliderValue, setSliderValue] = React.useState(50);
+
+  function onSliderRotateChange(value: number) {
+    setSliderValue(value);
+    let rotateValue = (50 - value)/50 * 180;
+    props.dispatch({
+      type: ActionType.TEXT_ELEMENT_CONTROL_PANEL_FORM,
+      state: {
+        elId: props.activeImageElement.id,
+        styleType: 'transform',
+        value: `rotate(${rotateValue}deg)`
+      }
+    });  
+  }
 
 
   return (
@@ -314,8 +237,9 @@ export default (props: ControlTextPropsType) => {
         <FormControl style={{width: '50%'}}>
           <InputLabel htmlFor="age-simple">选择字体</InputLabel>
           <Select
-            value={props.activeElement.elementStyles.fontFamily}
-            onChange={(e) => onFontSizeFontFamilyChange('fontFamily', e)}
+            value={props.activeImageElement.elementStyles.fontFamily}
+            inputRef={fontFamilyRef}
+            onChange={(e) => onTextElementOwnStyleChange('fontFamily', e.target.value, fontFamilyRef)}
           >
             <MenuItem value='sans-serif'>
               <em>系统默认字体</em>
@@ -333,8 +257,9 @@ export default (props: ControlTextPropsType) => {
         <FormControl style={{width: '50%'}}>
           <InputLabel htmlFor="age-simple">选择文字字号</InputLabel>
           <Select
-            value={props.activeElement.elementStyles.fontSize}
-            onChange={(e) => onFontSizeFontFamilyChange('fontSize', e)}
+            value={props.activeImageElement.elementStyles.fontSize}
+            inputRef={fontSizeRef}
+            onChange={(e) => onTextElementOwnStyleChange('fontSize', e.target.value, fontSizeRef)}
           >
             <MenuItem value=''>
               <em>默认14px</em>
@@ -352,15 +277,14 @@ export default (props: ControlTextPropsType) => {
         <input
           type='color'
           className='color-input'
-          value={textInputColor}
-          onChange={(e) => onTextInputColorChange(e)}
+          ref={fontColorSelect}
+          onChange={(e) => onTextElementOwnStyleChange('color', e.target.value, fontColorSelect)}
         />
         <input
           className='color-value-input'
           type='text'
-          value={textColor}
-          onChange={(e) => onTextColroChange(e)}
-          onBlur={onTextColroBlur}
+          ref={fontColorInput}
+          onChange={(e) => onTextElementOwnStyleChange('color', e.target.value, fontColorInput)}
         />
       </div>
       <div className='item'>
@@ -369,24 +293,22 @@ export default (props: ControlTextPropsType) => {
           className='textarea-content'
           ref={testareaRef}
           id='textarea'
-          onBlur={onContentBlur}
+          onChange={(e) => onTextElementOwnStyleChange('content', e.target.value, testareaRef)}
         ></textarea>
       </div>
       <div className='item'>
         <span className='item-title'>文本区域大小:</span>
         宽：<input
-              value={textComFormItem.width}
+              ref={widthRef}
               className='img-com-input'
               type='text'
-              onChange={(e) => onTextComFormItemChange('width', e.target.value)}
-              onBlur={() => ontextComFormItemBlur('width')}
+              onChange={(e) => onTextElementOwnStyleChange('width', e.target.value, widthRef)}
             />&nbsp;px&nbsp;&nbsp;&nbsp;&nbsp;
         高：<input
-              value={textComFormItem.minHeight}
+              ref={minHeightRef}
               className='img-com-input'
               type='text'
-              onChange={(e) => onTextComFormItemChange('minHeight', e.target.value)}
-              onBlur={() => ontextComFormItemBlur('minHeight')}
+              onChange={(e) => onTextElementOwnStyleChange('minHeight', e.target.value, minHeightRef)}
               />&nbsp;px
       </div>
       <div className='item'>
@@ -394,16 +316,14 @@ export default (props: ControlTextPropsType) => {
         Y：<input
             className='img-com-input'
             type='text'
-            onChange={(e) => onTopLeftZIndexChange('top', e.target.value)}
-            value={commomStyle.top}
-            onBlur={() => onTopLeftZIndexBlur('top')}
+            ref={topRef}
+            onChange={(e) => onTextElementOwnStyleChange('top', e.target.value, topRef)}
             />&nbsp;px&nbsp;&nbsp;&nbsp;
         X：<input
              className='img-com-input'
              type='text'
-             onChange={(e) => onTopLeftZIndexChange('left', e.target.value)}
-             value={commomStyle.left}
-             onBlur={() => onTopLeftZIndexBlur('left')}
+             ref={leftRef}
+             onChange={(e) => onTextElementOwnStyleChange('left', e.target.value, leftRef)}
            />&nbsp;px
       </div>
       <div className='item'>
@@ -411,44 +331,33 @@ export default (props: ControlTextPropsType) => {
         <input
           className='img-com-input-rotate'
           type='text'
-          onChange={(e) => onTextComRotateChange('transform', e.target.value)}
-          onBlur={onTextComRotateBlur}
+          ref={rotateInputRef}
+          onChange={(e) => onTextElementOwnStyleChange('transform', e.target.value, rotateInputRef)}
           style={{width: '3rem', marginRight: '.5rem'}}
-          value={`${transform}`}
         />°
         <Slider
-          value={rotate}
+          value={sliderValue}
           aria-labelledby="label"
-          onChange={(e, val) => onSliderRotateChange('slider', val)}
+          onChange={(e, val) => onSliderRotateChange(val)}
         />
       </div>
-      {/* <div className='item'>
-        <span className='item-title'>层级:</span>
-        <input
-          className='img-com-input'
-          type='text'
-          onChange={(e) => onTopLeftZIndexChange('zIndex', e.target.value)}
-          onBlur={() => onTopLeftZIndexBlur('zIndex')}
-          value={commomStyle.zIndex}
-        />
-      </div> */}
       <div className='item'>
         <span className='item-title'>是否编辑:</span>
         <Switch
           value='check'
           color="primary"
-          onChange={props.onAllowEditedChange}
-          checked={props.activeElement.isAllowEdit}
+          inputRef={isAllowEditRef}
+          onChange={(_, v) => onTextElementOwnStyleChange('isAllowEdit', `${v}`, isAllowEditRef)}
         />
       </div>
       <div className='item'>
         {
-          props.activeElement ?
-            props.activeElement.fontStyleImgList.map((val: any, i: number) =>
+          props.activeImageElement ?
+            props.activeImageElement.fontStyleImgList.map((val: any, i: number) =>
               <div
                 className={val.isChecked ? 'font-style-img-outer img-outer-active' : 'font-style-img-outer'}
                 key={`${i}_${val.alt}`}
-                onClick={() => onTextComFormItemChange(val.type, val.value)}
+                // onClick={() => onTextComFormItemChange(val.type, val.value)}
               >
                 <img
                   alt={val.alt}

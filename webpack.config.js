@@ -99,10 +99,10 @@ module.exports = {
       }
     ]
   },
-  externals: {
-    "react": "React",
-    "react-dom": "ReactDOM"
-  },
+  // externals: {
+  //   "react": "React",
+  //   "react-dom": "ReactDOM"
+  // },
   devServer: {
     contentBase: path.resolve(__dirname, 'dist'),
     port: 8902,

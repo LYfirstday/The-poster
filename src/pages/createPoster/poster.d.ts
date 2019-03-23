@@ -77,6 +77,7 @@ export interface TextElementInnerType {
   top: string,
   left: string,
   minHeight: string,
+  lineHeight: number,
   width: string,
   zIndex: number,
   color: string

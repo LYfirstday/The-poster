@@ -2,7 +2,7 @@
 import * as React from 'react';
 import './imageElementComponent.less';
 import { ImgElementType } from './../poster';
-import { ActionTypeInfo } from './../createPosterReducers/createPosterReducers';
+import { ActionTypeInfo, ActionType } from './../createPosterReducers/createPosterReducers';
 import { rotateValueFilter } from './../../../static/ts/tools';
 
 export interface ImageElementComponentPropsType {
@@ -22,7 +22,7 @@ const ImageElementComponent = (props: ImageElementComponentPropsType) => {
     let distanceY = e.clientY - out.offsetTop;
     let distanceX = e.clientX - out.offsetLeft;
     props.dispatch({
-      type: 'image_element_mouse_down',
+      type: ActionType.IMAGE_ELEMENT_MOUSE_DOWN,
       state: {elId: id, distanceY: distanceY, distanceX: distanceX}
     });
     document.onmousemove = onImgMousemove.bind(out, id, distanceY, distanceX);
@@ -34,7 +34,7 @@ const ImageElementComponent = (props: ImageElementComponentPropsType) => {
     let topMove = `${e.clientY - props.imageElement.distanceY}px`;
     let leftMove = `${e.clientX - props.imageElement.distanceX}px`;
     props.dispatch({
-      type: 'image_element_mouse_move',
+      type: ActionType.IMAGE_ELEMENT_MOUSE_MOVE,
       state: {elId: id, topMove: topMove, leftMove: leftMove}
     });
   }
@@ -53,7 +53,7 @@ const ImageElementComponent = (props: ImageElementComponentPropsType) => {
     let distanceY = e.clientY;
     let distanceX = e.clientX;
     props.dispatch({
-      type: 'image_element_mouse_down',
+      type: ActionType.IMAGE_ELEMENT_MOUSE_DOWN,
       state: {elId: id, distanceY: distanceY, distanceX: distanceX}
     });
 
@@ -112,7 +112,7 @@ const ImageElementComponent = (props: ImageElementComponentPropsType) => {
     }
 
     props.dispatch({
-      type: 'image_element_size_change_mouse_move',
+      type: ActionType.IMAGE_ELEMENT_SIZE_CHANGE_MOUSE_MOVE,
       state: {
         elId: id,
         width: newWidth,
@@ -137,7 +137,7 @@ const ImageElementComponent = (props: ImageElementComponentPropsType) => {
     >
       <p
         className={props.imageElement.isChecked ? 'delete-img operation-img-active' : 'delete-img'}
-        onClick={() => props.dispatch({ type: 'image_element_delete', state: {index: props.index} })}
+        onClick={() => props.dispatch({ type: ActionType.IMAGE_ELEMENT_DELETE, state: {index: props.index} })}
       ></p>
       <p
         className={props.imageElement.isChecked ? 'move-img operation-img-active' : 'move-img'}

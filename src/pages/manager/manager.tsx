@@ -179,7 +179,7 @@ export default (props: any) => {
         {
           state.managerList.length > 0 ?
             state.managerList.map((val: ManagerInfoType, i: number) =>
-              <tr key={i}>
+              <tr key={`${val.roleId}_${i}`}>
                 <td>{val.userName}</td>
                 <td>{parseInt(`${val.roleId}`) === 1 ? '设计师' : '管理员'}</td>
                 <td>

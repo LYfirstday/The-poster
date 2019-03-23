@@ -14,7 +14,7 @@ export default (props: TableProps) => {
         <thead className='thead'>
           <tr>
             {props.theadeData.map((val, i) =>
-              <td key={i}>{val}</td>
+              <td key={`${val}_${i}`}>{val}</td>
             )}
           </tr>
         </thead>
