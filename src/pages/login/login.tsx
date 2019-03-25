@@ -8,6 +8,7 @@ export default (props: any) => {
   const [errorInfo, setErrorInfo] = React.useState('');
 
   const doLogin = () => {
+    event!.preventDefault();
     if (!account.userName) {
       setErrorInfo('登录账号不能为空!');
       return;

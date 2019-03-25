@@ -19,63 +19,65 @@ export type ActivityPageActionType = {
   type: ActionType
 };
 
-export type ActionType = 'request_start'            // request begin
-                       | 'get_activity_data'        // get activities list
-                       | 'request_end'              // request end
-                       | 'next_page'                // next page
-                       | 'pre_page'                 // previous page
-                       | 'page_size_change'         // on page size change
-                       | 'edit_activity_info'       // edit activity info
-                       | 'not_edit_activity'        // init create activity
-                       | 'keyword_search'           // keyword search
+export enum ActionType {
+  REQUEST_START = 'request_start',                // request begin
+  REQUEST_END = 'request_end',                    // request end
+  GET_ACTIVITY_DATA = 'get_activity_data',        // get activities list
+  NEXT_PAGE = 'next_page',                        // next page
+  PRE_PAGE = 'pre_page',                          // previous page
+  PAGE_SIZE_CHANGE = 'page_size_change',          // on page size change
+  EDIT_ACTIVITY_INFO = 'edit_activity_info',      // edit activity info
+  NOT_EDIT_ACTIVITY = 'not_edit_activity',        // init create activity
+  KEYWORD_SEARCH = 'keyword_search',              // keyword search
+}
 
 
 export const activityPageReducer = (state: ActivityPageStateType, action: ActivityPageActionType) => {
   switch (action.type) {
-    case 'request_start':
+    case ActionType.REQUEST_START:
       return {
         ...state,
         isLoading: true
       };
-    case 'get_activity_data':
+    case ActionType.GET_ACTIVITY_DATA:
       return {
         ...state,
         ...action.arguments,
         activityData: action.arguments.activityData
       }
-    case 'request_end':
+    case ActionType.REQUEST_END:
       return {
         ...state,
         isLoading: false
       }
-    case 'next_page':
+    case ActionType.NEXT_PAGE:
       return {
         ...state,
         number: state.number + 1
       }
-    case 'pre_page':
+    case ActionType.PRE_PAGE:
       return {
         ...state,
         number: state.number - 1
       }
-    case 'page_size_change':
+    case ActionType.PAGE_SIZE_CHANGE:
       return {
         ...state,
         number: 0,
         pageSize: action.arguments.pageSize
       }
-    case 'keyword_search':
+    case ActionType.KEYWORD_SEARCH:
       return {
         ...state,
         keyword: action.arguments.keyword
       }
-    case 'edit_activity_info':
+    case ActionType.EDIT_ACTIVITY_INFO:
       return {
         ...state,
         isEdit: true,
         editActivityInfo: action.arguments.activityInfo
       }
-    case 'not_edit_activity':
+    case ActionType.NOT_EDIT_ACTIVITY:
       return {
         ...state,
         isEdit: false,

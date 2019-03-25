@@ -17,15 +17,17 @@ export interface ManagerInfoType {
   userPassword: string
 }
 
-export type ActionType = 'request_start'            // request begin
-                       | 'get_manager_data'         // get manager list
-                       | 'request_end'              // request end
-                       | 'next_page'                // next page
-                       | 'pre_page'                 // previous page
-                       | 'page_size_change'         // on page size change
-                       | 'edit_manager_info'        // edit manager info
-                       | 'not_edit_manager'         // init create manager
-                       | 'keyword_search'           // keyword search
+export enum ActionType {
+  REQUEST_START = 'request_start',                  // request begin
+  REQUEST_END = 'request_end',                      // request end
+  GET_MANAGER_DATA = 'get_manager_data',            // get manager list
+  NEXT_PAGE = 'next_page',                          // next page
+  PRE_PAGE = 'pre_page',                            // previous page
+  PAGE_SIZE_CHANGE = 'page_size_change',            // on page size change
+  EDIT_MANAGER_INFO = 'edit_manager_info',          // edit manager info
+  NOT_EDIT_MANAGER = 'not_edit_manager',            // init create manager 
+  KEYWORD_SEARCH = 'keyword_search'                 // keyword search
+};
 
 export interface PageActionType {
   arguments?: any,
@@ -34,50 +36,50 @@ export interface PageActionType {
 
 export const managerPageReducer = (state: ManagerPageStateType, action: PageActionType) => {
   switch (action.type) {
-    case 'request_start':
+    case ActionType.REQUEST_START:
       return {
         ...state,
         isLoading: true
       };
-    case 'get_manager_data':
+    case ActionType.GET_MANAGER_DATA:
       return {
         ...state,
         ...action.arguments,
         managerList: action.arguments.managerList
       }
-    case 'request_end':
+    case ActionType.REQUEST_END:
       return {
         ...state,
         isLoading: false
       }
-    case 'next_page':
+    case ActionType.NEXT_PAGE:
       return {
         ...state,
         number: state.number + 1
       }
-    case 'pre_page':
+    case ActionType.PRE_PAGE:
       return {
         ...state,
         number: state.number - 1
       }
-    case 'page_size_change':
+    case ActionType.PAGE_SIZE_CHANGE:
       return {
         ...state,
         number: 0,
         size: action.arguments.size
       }
-    case 'keyword_search':
+    case ActionType.KEYWORD_SEARCH:
       return {
         ...state,
         keyword: action.arguments.keyword
       }
-    case 'edit_manager_info':
+    case ActionType.EDIT_MANAGER_INFO:
       return {
         ...state,
         isEdit: true,
         editManagerInfo: action.arguments.managerInfo
       }
-    case 'not_edit_manager':
+    case ActionType.NOT_EDIT_MANAGER:
       return {
         ...state,
         isEdit: false,

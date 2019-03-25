@@ -9,7 +9,7 @@ import { TextComStyleType } from './poster'
 
 export interface TextElementControlPanelPropsType {
   dispatch: React.Dispatch<ActionTypeInfo>,
-  activeImageElement: TextComStyleType
+  activeTextElement: TextComStyleType
 }
 
 export type FontSizeFontFamilyType = {
@@ -134,27 +134,27 @@ export default (props: TextElementControlPanelPropsType) => {
   const [errorInfo, setErrorInfo] = React.useState('');
 
   React.useEffect(() => {
-    let thisElementStyle = props.activeImageElement.elementStyles;
+    let thisElementStyle = props.activeTextElement.elementStyles;
     fontColorInput.current!.value = thisElementStyle.color;
     fontColorSelect.current!.value = thisElementStyle.color;
-    testareaRef.current!.value = props.activeImageElement.content;
+    testareaRef.current!.value = props.activeTextElement.content;
     widthRef.current!.value = `${parseInt(thisElementStyle.width)}`;
     minHeightRef.current!.value = `${parseInt(thisElementStyle.minHeight)}`;
     topRef.current!.value = `${parseInt(thisElementStyle.top)}`;
     leftRef.current!.value = `${parseInt(thisElementStyle.left)}`;
-    isAllowEditRef.current!.checked = Boolean(props.activeImageElement.isAllowEdit);
-    rotateInputRef.current!.value = rotateValueFilter(props.activeImageElement.textElementOuterType.transform);
-    setSliderValue(oppositeRotateValueFilter(props.activeImageElement.textElementOuterType.transform));
+    isAllowEditRef.current!.checked = Boolean(props.activeTextElement.isAllowEdit);
+    rotateInputRef.current!.value = rotateValueFilter(props.activeTextElement.textElementOuterType.transform);
+    setSliderValue(oppositeRotateValueFilter(props.activeTextElement.textElementOuterType.transform));
   }, [
-    props.activeImageElement,
-    props.activeImageElement.elementStyles.color,
-    props.activeImageElement.content,
-    props.activeImageElement.elementStyles.width,
-    props.activeImageElement.elementStyles.minHeight,
-    props.activeImageElement.elementStyles.top,
-    props.activeImageElement.elementStyles.left,
-    props.activeImageElement.isAllowEdit,
-    props.activeImageElement.textElementOuterType.transform
+    props.activeTextElement,
+    props.activeTextElement.elementStyles.color,
+    props.activeTextElement.content,
+    props.activeTextElement.elementStyles.width,
+    props.activeTextElement.elementStyles.minHeight,
+    props.activeTextElement.elementStyles.top,
+    props.activeTextElement.elementStyles.left,
+    props.activeTextElement.isAllowEdit,
+    props.activeTextElement.textElementOuterType.transform
   ]);
 
   const fontFamilyRef = React.useRef<HTMLInputElement | null>(null);
@@ -206,7 +206,7 @@ export default (props: TextElementControlPanelPropsType) => {
     props.dispatch({
       type: ActionType.TEXT_ELEMENT_CONTROL_PANEL_FORM,
       state: {
-        elId: props.activeImageElement.id,
+        elId: props.activeTextElement.id,
         styleType: type,
         value: value
       }
@@ -221,11 +221,23 @@ export default (props: TextElementControlPanelPropsType) => {
     props.dispatch({
       type: ActionType.TEXT_ELEMENT_CONTROL_PANEL_FORM,
       state: {
-        elId: props.activeImageElement.id,
+        elId: props.activeTextElement.id,
         styleType: 'transform',
         value: `rotate(${rotateValue}deg)`
       }
     });  
+  }
+
+  // 字体加粗、斜体、下划线、对齐方式change
+  function onFontStyleChange(type: string, number: number) {
+    props.dispatch({
+      type: ActionType.TEXT_ELEMENT_FONT_STYLE,
+      state: {
+        elId: props.activeTextElement.id,
+        type: type,
+        index: number
+      }
+    });
   }
 
 
@@ -237,7 +249,7 @@ export default (props: TextElementControlPanelPropsType) => {
         <FormControl style={{width: '50%'}}>
           <InputLabel htmlFor="age-simple">选择字体</InputLabel>
           <Select
-            value={props.activeImageElement.elementStyles.fontFamily}
+            value={props.activeTextElement.elementStyles.fontFamily}
             inputRef={fontFamilyRef}
             onChange={(e) => onTextElementOwnStyleChange('fontFamily', e.target.value, fontFamilyRef)}
           >
@@ -257,7 +269,7 @@ export default (props: TextElementControlPanelPropsType) => {
         <FormControl style={{width: '50%'}}>
           <InputLabel htmlFor="age-simple">选择文字字号</InputLabel>
           <Select
-            value={props.activeImageElement.elementStyles.fontSize}
+            value={props.activeTextElement.elementStyles.fontSize}
             inputRef={fontSizeRef}
             onChange={(e) => onTextElementOwnStyleChange('fontSize', e.target.value, fontSizeRef)}
           >
@@ -352,12 +364,12 @@ export default (props: TextElementControlPanelPropsType) => {
       </div>
       <div className='item'>
         {
-          props.activeImageElement ?
-            props.activeImageElement.fontStyleImgList.map((val: any, i: number) =>
+          props.activeTextElement ?
+            props.activeTextElement.fontStyleImgList.map((val: any, i: number) =>
               <div
                 className={val.isChecked ? 'font-style-img-outer img-outer-active' : 'font-style-img-outer'}
                 key={`${i}_${val.alt}`}
-                // onClick={() => onTextComFormItemChange(val.type, val.value)}
+                onClick={() => onFontStyleChange(val.type, i)}
               >
                 <img
                   alt={val.alt}

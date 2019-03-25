@@ -2,125 +2,95 @@
 import * as React from 'react';
 import { Button, TextField, Select, MenuItem, InputLabel, FormControl, } from '@material-ui/core';
 import { ActivityData } from './../activityManagement/activityReducer/activityReducer';
-import { ActionTypeInfo, ActionType } from './createPosterReducers/createPosterReducers';
+import { ActionTypeInfo, ActionType, CanvasPageState } from './createPosterReducers/createPosterReducers';
 import doService from './../../static/ts/axios';
-import Message from './../../components/message/message';
+// import Message from './../../components/message/message';
 
 export interface CanvasComPropsType {
-  pageState: any,
-  colorValue: string,    // 用户输入的颜色值
-  errorInfo: string,    // 用户输入的颜色值不合规时的提示信息
-  onColorChange: (v: string) => void,    // 颜色选择器值change事件的dispacth
-  onErrorInfoChange: (v: string) => void,    // 用户输入的颜色值不合规时的提示信息的dispacth
-  onActivityUrlChange: (v: string) => void,
+  pageState: CanvasPageState,
   activityList: ActivityData[],
   dispatch: React.Dispatch<ActionTypeInfo>
 }
 
 export default (props: CanvasComPropsType) => {
 
-  const [bacColor, setBacColor] = React.useState('#ffffff');
-  const [colorValue, setColorValue] = React.useState(bacColor);
-
-  // 调色板change事件
-  function onColorChange(e: any) {
-    let value = e.target.value;
-    props.onErrorInfoChange('');
-    setBacColor(value);
-    setColorValue(value);
-    props.onColorChange(value);
-  }
-
-  // 颜色输入input change事件
-  function onColorValueChange(e: any) {
-    let value = e.target.value;
-    setColorValue(value);
-    if (value.length === 7) {
-      if (value.startsWith('#')) {
-        setBacColor(value);
-        props.onColorChange(value);
-        props.onErrorInfoChange('');
-      } else {
-        props.onErrorInfoChange('请输入正确的颜色值,以#开头 + 6位颜色值');
-      }
-    } else {
-      props.onErrorInfoChange('请输入正确的颜色值,以#开头 + 6位颜色值');
-    }
-  }
-
-  // 活动页面input change事件
-  const [activityUrl, setActivity] = React.useState('');
-  function onActivityInputChange(e: any) {
-    setActivity(e.target.value);
-  }
-
-  function onActivityInputBlur() {
-    if (activityUrl) {
-      if (!(activityUrl.startsWith('http://') || activityUrl.startsWith('https://'))) {
-        props.onErrorInfoChange('请输入可访问的页面地址;如：http://xxx或https://');
-        return;
-      } else {
-        props.onErrorInfoChange('');
-        props.onActivityUrlChange(activityUrl);
-      }
-    } else {
-      props.onErrorInfoChange('');
-      props.onActivityUrlChange(activityUrl);
-    }
-  }
-
   // 选择活动类型select change事件
   function onActivityTypeChange(typeId: string) {
     props.dispatch({ type: ActionType.ACTIVITY_TYPE_CHANGE, state: { typeId: typeId } });
   }
 
-  React.useEffect(() => {
-    setBacColor(props.pageState.pageState.canvasBacInputValue);
-    setColorValue(props.pageState.pageState.canvasBacInputValue);
-    setActivity(`${props.pageState.pageState.activityPageUrl}`);
-  }, [
-    props.pageState.pageState.canvasBacInputValue, 
-    props.pageState.pageState.activityPageUrl,
-  ])
-
   // on message
-  const [onMessage, setMessage] = React.useState({isMessage: false, messageInfo: ''});
-
-  function onMessageOpenOrClose() {
-    setMessage({isMessage: false, messageInfo: ''});
-  }
+  const [errorInfo, setErrorInfo] = React.useState('');
 
   // 上传背景图
   function uploadBacImg() {
-    props.dispatch({ type: ActionType.REQUEST_START });
     let input = document.querySelector('#uploadBacImg') as HTMLInputElement;
     let file = input.files![0];
     let fileType = file.type.split('/')[1];
     let fileSize = file.size;
     // 判断图片类型、大小是否合规
     if (fileType !== 'jpg' && fileType !== 'jpeg' && fileType !== 'png') {
-      setMessage({isMessage: true, messageInfo: '请上传正确格式的图片'});
+      setErrorInfo('请上传正确格式的图片');
       return;
     }
     if (fileSize > 2097152) {
-      setMessage({isMessage: true, messageInfo: '请上传小于2M大小的图片'});
+      setErrorInfo('请上传小于2M大小的图片');
       return;
     };
+    props.dispatch({ type: ActionType.REQUEST_START });
     let formData = new FormData();
     formData.append('file', file);
     doService('/v1/file/upload', 'POST', formData).then(res => {
       if (res.code === 200) {
         props.dispatch({ type: ActionType.BACKGROUND_IMAGE_URL, state: {bacImgUrl: res.values} });
       } else {
-        setMessage({isMessage: true, messageInfo: res.description});
+        setErrorInfo(res.description);
       }
       props.dispatch({ type: ActionType.REQUEST_END });
     });
   }
 
+  React.useEffect(() => {
+    backgroundColorInputRef.current!.value = props.pageState.pageState.canvasBacInputValue;
+    backgroundColorRef.current!.value = props.pageState.pageState.canvasBacInputValue;
+  }, [
+    props.pageState.pageState.canvasBacImgUrl,
+    props.pageState.pageState.canvasBackground
+  ]);
+
+  // 画布表单
+
+  const backgroundColorRef = React.useRef<HTMLInputElement | null>(null);
+  const backgroundColorInputRef = React.useRef<HTMLInputElement | null>(null);
+  const activityPageUrlRef = React.useRef<HTMLInputElement | null>(null);
+
+  function onFormItemValueChange(type: string, value: string, thisRef: React.MutableRefObject<HTMLInputElement | null>) {
+    if(type === 'backgroundColor') {
+      if (value === '' || !value.startsWith('#') || value.length !== 7) {
+        setErrorInfo('请输入有效的7位颜色值;如 #000000');
+        return;
+      }
+    } else if (type === 'activityPageUrl') {
+      if (!(value.startsWith('http://') || value.startsWith('https://'))) {
+        setErrorInfo('请输入可访问的页面地址;如：http://xxx或https://');
+        return;
+      } 
+    }
+    console.log(value)
+    setErrorInfo('');
+    thisRef.current!.value = value;
+    props.dispatch({
+      type: ActionType.CANVAS_STYLE_FORM,
+      state: {
+        type: type,
+        value: value
+      }
+    });
+  }
+
   return (
     <>
-     <span className='error-info'>{props.errorInfo}</span>
+      <span className='error-info'>{errorInfo}</span>
       <div className='item'>
         <span className='item-title'>画布尺寸:</span>
         <p className='item-content'>414px * 736px</p>
@@ -134,14 +104,14 @@ export default (props: CanvasComPropsType) => {
         <input
           className='color-input'
           type='color'
-          value={bacColor}
-          onChange={(e) => onColorChange(e)}
+          ref={backgroundColorRef}
+          onChange={(e) => onFormItemValueChange('backgroundColor', e.target.value, backgroundColorRef)}
         />
         <input
           className='color-value-input'
           type='text'
-          value={colorValue}
-          onChange={(e) => onColorValueChange(e)}
+          ref={backgroundColorInputRef}
+          onChange={(e) => onFormItemValueChange('backgroundColor', e.target.value, backgroundColorInputRef)}
         />
       </div>
       <div className='item'>
@@ -149,9 +119,8 @@ export default (props: CanvasComPropsType) => {
         <TextField
           label="请输入可访问url地址"
           type='text'
-          value={activityUrl}
-          onChange={(e) => onActivityInputChange(e)}
-          onBlur={onActivityInputBlur}
+          inputRef={activityPageUrlRef}
+          onChange={(e) => onFormItemValueChange('activityPageUrl', e.target.value, activityPageUrlRef)}
           margin="normal"
           className='item-activity-input'
         />
@@ -199,13 +168,8 @@ export default (props: CanvasComPropsType) => {
       </div>
       <div className='item'>
         <span className='important-tips'>*</span>
-        <strong className='important-content'> HTML DOM和canvas在渲染有细微差别，位置有一定误差</strong>
+        <strong className='important-content'> HTML字体和canvas在渲染有细微差别，位置有一定误差</strong>
       </div>
-      <Message
-        isOpen={onMessage.isMessage}
-        children={onMessage.messageInfo}
-        onMessageOpenOrClose={onMessageOpenOrClose}
-      />
     </>
   )
 }

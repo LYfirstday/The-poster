@@ -11,21 +11,24 @@ const fontStyleImgList: FontStyleImgType[] = [
     alt: '加粗',
     src: require('./../../../static/imgs/overstriking.png'),
     type: 'fontWeight',
-    value: 600
+    value: 'bold',
+    none: 'normal'
   },
   {
     isChecked: false,
     alt: '下划线',
     src: require('./../../../static/imgs/underline.png'),
     type: 'textDecoration',
-    value: 'underline'
+    value: 'underline',
+    none: 'none'
   },
   {
     isChecked: false,
     alt: '斜体',
     src: require('./../../../static/imgs/italic.png'),
     type: 'fontStyle',
-    value: 'italic'
+    value: 'italic',
+    none: 'normal'
   },
   {
     isChecked: true,
@@ -83,7 +86,7 @@ let initTextElement: TextComStyleType = {
   elementStyles: {
     fontFamily: 'sans-serif',
     fontSize: '14px',
-    fontWeight: 500,
+    fontWeight: 'normal',
     textDecoration: 'none',
     fontStyle: '',
     textAlign: 'left',
@@ -107,11 +110,12 @@ let initTextElement: TextComStyleType = {
 
 // action type
 export enum ActionType {
-  BACKGROUND_COLOR = 'bacColor',    // 画布背景色板cahnge事件action
-  ERROR_INFO = 'errorInfo',    // 输入错误背景色错误提示事件action
   BACKGROUND_IMAGE_URL = 'bacImgUrl',    // 上传背景色图片事件action
   FLOAT_MENU = 'floatMenu',    // 右侧浮动菜单change事件action
   ACTIVITY_URL = 'activityUrl',    // 添加活动页面
+
+  CANVAS_STYLE_FORM = 'canvas_style_form',   // 画布界面form表单改变action
+
   PAGE_ELEMENT_CHANGE = 'page_element_change',    // 页面选中元素改变 PageCheckedType
   // ===========================图片元素action type
   IMAGE_ELEMENT_MOUSE_DOWN = 'image_element_mouse_down',
@@ -128,7 +132,7 @@ export enum ActionType {
   TEXT_ELEMENT_DELETE = 'text_element_delete',
   TEXT_ELEMENT_SIZE_CHANGE_MOUSE_MOVE = 'text_element_size_change_mouse_move',
   TEXT_ELEMENT_CONTROL_PANEL_FORM = 'text_element_control_panel_form',     // 文本元素控制板form表单数据change事件
-
+  TEXT_ELEMENT_FONT_STYLE = 'text_element_font_style',  // 文本元素最下面6个图片控制字体action
   REQUEST_START = 'request_start',
   REQUEST_END = 'request_end',
   ACTIVITY_TYPE_CHANGE = 'activityType_change',  // 活动类型变化
@@ -153,24 +157,8 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
 
   switch (action.type) {
     // 画布样式action================================================begin
-    case ActionType.BACKGROUND_COLOR:
-      return {
-        ...state,
-        pageState: {
-          ...state.pageState,
-          canvasBackground: `url(${state.pageState.canvasBacImgUrl}) no-repeat center ${action.state.bacColor}`,
-          canvasBacInputValue: action.state.bacColor
-        }
-      };
-    case ActionType.ERROR_INFO:
-      return {
-        ...state,
-        pageState: {
-          ...state.pageState,
-          errorInfo: action.state.errorInfo
-        }
-      };
     case ActionType.BACKGROUND_IMAGE_URL:
+    
       return {
         ...state,
         pageState: {
@@ -179,6 +167,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
           canvasBackground: `url('${action.state.bacImgUrl}') no-repeat center #fff`
         }
       };
+
     case ActionType.ACTIVITY_URL:
       return {
         ...state,
@@ -187,6 +176,24 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
           activityPageUrl: action.state.val
         }
       };
+
+    case ActionType.CANVAS_STYLE_FORM:
+      let thisPageState = state.pageState;
+      let thisType = action.state.type;
+      let thisValue = action.state.value;
+      if (thisType === 'backgroundColor') {
+        thisPageState.canvasBackground = `url(${state.pageState.canvasBacImgUrl}) no-repeat center ${thisValue}`;
+        thisPageState.canvasBacInputValue = thisValue;
+      } else if(thisType === 'activityPageUrl') {
+        thisPageState.activityPageUrl = thisValue;
+      }
+      
+      return {
+        ...state,
+        pageState: {
+          ...thisPageState
+        }
+      }
     // 画布样式action================================================end
 
     // 右侧浮动菜单action================================================begin
@@ -595,6 +602,66 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         }
       }
 
+    case ActionType.TEXT_ELEMENT_FONT_STYLE:
+      let fontStyleType = action.state.type;
+      let index = action.state.index;
+      let thisFontStyleList = textElementsList.filter(val => {
+        return action.state.elId === val.id
+      })[0];
+      let thisStyleList = thisFontStyleList.fontStyleImgList;
+      if (fontStyleType === 'textAlign') {
+        thisFontStyleList.elementStyles = {
+          ...thisFontStyleList.elementStyles,
+          [fontStyleType]: thisStyleList[index].value
+        };
+        switch (parseInt(index)) {
+          case 3:
+            thisStyleList[3].isChecked = true;
+            thisStyleList[4].isChecked = false;
+            thisStyleList[5].isChecked = false;
+            break;
+          case 4:
+            thisStyleList[3].isChecked = false;
+            thisStyleList[4].isChecked = true;
+            thisStyleList[5].isChecked = false;
+            break;
+          case 5:
+            thisStyleList[3].isChecked = false;
+            thisStyleList[4].isChecked = false;
+            thisStyleList[5].isChecked = true;
+            break;
+          default:
+            thisStyleList[3].isChecked = true;
+            thisStyleList[4].isChecked = false;
+            thisStyleList[5].isChecked = false;
+            break;
+        }
+        
+      } else {
+        thisStyleList[index].isChecked = !thisStyleList[index].isChecked;
+        if (thisStyleList[index].isChecked) {
+          thisFontStyleList.elementStyles = {
+            ...thisFontStyleList.elementStyles,
+            [fontStyleType]: thisStyleList[index].value
+          };
+        } else {
+          thisFontStyleList.elementStyles = {
+            ...thisFontStyleList.elementStyles,
+            [fontStyleType]: thisStyleList[index]!.none
+          };
+        }
+      }
+      
+      return {
+        ...state,
+        pageState: {
+          ...state.pageState,
+          textArrayList: [
+            ...textElementsList
+          ]
+        }
+      }
+
     // 文本元素action==============================================================end
 
     case ActionType.REQUEST_START:
@@ -608,6 +675,7 @@ export const CanvasPageReducer = (state: CanvasPageState, action: ActionTypeInfo
         isLoading: false
       }
     case ActionType.ACTIVITY_TYPE_CHANGE:
+
       return {
         ...state,
         activityTypeId: action.state.typeId

@@ -49,6 +49,7 @@ export interface FontStyleImgType {
   src: string,
   type: string,   // 对应到dom style上的属性名称
   value: string | number,  // style 的值
+  none?: string
 }
 
 // 包裹文本元素的外部容器样式类型
@@ -70,7 +71,7 @@ export interface TextElementCommomType {
 export interface TextElementInnerType {
   fontFamily: string,  // 字体类型
   fontSize: string,  // 字体大小
-  fontWeight: number,  // 字体加粗
+  fontWeight: number | 'normal' | 'bold' | 'bolder',  // 字体加粗
   textDecoration: string,  // 字体下划线
   fontStyle: string,  // 斜体字体 italic
   textAlign: 'left' | 'center' | 'right',  // 文本位置

@@ -5,7 +5,12 @@ import Table from './../../components/table/table';
 import { TextField, Button, TablePagination } from '@material-ui/core';
 import CreateActivity from './createActivity';
 import doService from './../../static/ts/axios';
-import { activityPageReducer, ActivityPageStateType, ActivityData } from './activityReducer/activityReducer';
+import {
+  activityPageReducer,
+  ActivityPageStateType,
+  ActivityData,
+  ActionType
+} from './activityReducer/activityReducer';
 import Loading from './../../components/loading/loading';
 import Message from './../../components/message/message';
 import { createActivityParamsType } from './createActivity';
@@ -43,7 +48,7 @@ export default () => {
   // on search button click
   function onSearchButtonClick() {
     let keyword = keywordInputRef.current!.value;
-    dispatch({ type: 'keyword_search', arguments: { keyword: keyword } });
+    dispatch({ type: ActionType.KEYWORD_SEARCH, arguments: { keyword: keyword } });
   }
 
   // when the params(pageSize, number, keyword) has changed, it will call getActivityData Function
@@ -59,7 +64,7 @@ export default () => {
   const [isOpen, setIsOpen] = React.useState(false);
 
   function createActivity() {
-    dispatch({ type: 'not_edit_activity' });
+    dispatch({ type: ActionType.NOT_EDIT_ACTIVITY });
     shouldCreateActivity();
   }
 
@@ -76,7 +81,7 @@ export default () => {
 
   // get activities lsit
   function getActivityData() {
-    dispatch({type: 'request_start'});
+    dispatch({type: ActionType.REQUEST_START});
     let data: requestParamsType = {
       number: state.number,
       size: state.pageSize,
@@ -88,7 +93,7 @@ export default () => {
     doService('/v1/postertype/list', 'POST', data).then(res => {
       if (res.code === 200) {
         let tag = res.values;
-        dispatch({type: 'get_activity_data', arguments: {
+        dispatch({type: ActionType.GET_ACTIVITY_DATA, arguments: {
           activityData: tag.content,
           number: tag.number,
           total: tag.totalElements,
@@ -97,13 +102,13 @@ export default () => {
       } else {
         setMessage({ isMessage: !onMessage.isMessage, messageInfo: res.description });
       }
-      dispatch({type: 'request_end'});
+      dispatch({type: ActionType.REQUEST_END});
     });
   }
 
   // do create an activity type
   function doCreateActivity(val: createActivityParamsType) {
-    dispatch({type: 'request_start'});
+    dispatch({type: ActionType.REQUEST_START});
     doService('/v1/postertype/save', 'POST', val).then(res => {
       if (res.code === 200) {
         setMessage({ isMessage: !onMessage.isMessage, messageInfo: '创建活动类型成功' });
@@ -112,13 +117,13 @@ export default () => {
       } else {
         setMessage({ isMessage: !onMessage.isMessage, messageInfo: res.description });
       }
-      dispatch({type: 'request_end'});
+      dispatch({type: ActionType.REQUEST_END});
     });
   }
 
   // do edit activity info
   function doEditActivity(val: createActivityParamsType) {
-    dispatch({type: 'request_start'});
+    dispatch({type: ActionType.REQUEST_START});
     doService('/v1/postertype/update', 'POST', val).then(res => {
       if (res.code === 200) {
         setMessage({ isMessage: !onMessage.isMessage, messageInfo: '编辑活动类型成功' });
@@ -127,7 +132,7 @@ export default () => {
       } else {
         setMessage({ isMessage: !onMessage.isMessage, messageInfo: res.description });
       }
-      dispatch({type: 'request_end'});
+      dispatch({type: ActionType.REQUEST_END});
     });
   }
 
@@ -138,13 +143,13 @@ export default () => {
       typeName: typeName,
       typeContext: typeContext,
     };
-    dispatch({ type: 'edit_activity_info', arguments: { activityInfo: data } });
+    dispatch({ type: ActionType.EDIT_ACTIVITY_INFO, arguments: { activityInfo: data } });
     shouldCreateActivity();
   }
 
   // delete one activity info
   function deleteActivity(id: string) {
-    dispatch({type: 'request_start'});
+    dispatch({type: ActionType.REQUEST_START});
     doService('/v1/postertype/update', 'POST', { typeId: id, deleteState: 1 }).then(res => {
       if (res.code === 200) {
         setMessage({ isMessage: !onMessage.isMessage, messageInfo: '删除活动成功' });
@@ -152,7 +157,7 @@ export default () => {
       } else {
         setMessage({ isMessage: !onMessage.isMessage, messageInfo: res.description });
       }
-      dispatch({type: 'request_end'});
+      dispatch({type: ActionType.REQUEST_END});
     });
   }
 
@@ -217,13 +222,16 @@ export default () => {
           labelRowsPerPage='每页数据条数'
           onChangePage={(_, number) => number > state.number
                           ?
-                            dispatch({ type: 'next_page' })
+                            dispatch({ type: ActionType.NEXT_PAGE })
                           :
-                            dispatch({ type: 'pre_page' })}
+                            dispatch({ type: ActionType.PRE_PAGE })}
           page={state.number}
           rowsPerPage={state.pageSize}
           rowsPerPageOptions={[10, 20, 30]}
-          onChangeRowsPerPage={(e) => dispatch({ type: 'page_size_change', arguments: { pageSize: parseInt(e.target.value) } })}
+          onChangeRowsPerPage={(e) => dispatch({
+            type: ActionType.PAGE_SIZE_CHANGE,
+            arguments: { pageSize: parseInt(e.target.value)}
+          })}
         />
       </div>
       <CreateActivity

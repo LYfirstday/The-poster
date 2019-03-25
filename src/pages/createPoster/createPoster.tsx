@@ -48,7 +48,7 @@ const controlPanelListInfo: ControlPanelListType[] = [
       canvasBacInputValue: '#ffffff',
       errorInfo: '',
       canvasBacImgUrl: '',
-      canvasBackground: `url('') no-repeat center #fff`,
+      canvasBackground: `url('') no-repeat center #ffffff`,
       controlPanelListInfo: controlPanelListInfo,
       activeElement: {},
       pageCheckedType: 'none',
@@ -100,7 +100,6 @@ const controlPanelListInfo: ControlPanelListType[] = [
     let el = event!.target as HTMLElement;
     if (el.classList.contains('create-poster-left') || el.classList.contains('poster-canvas')) {
       dispatch({ type: ActionType.PAGE_ELEMENT_CHANGE, state: {value: 'none'} });
-      dispatch({type: ActionType.ERROR_INFO, state: {errorInfo: ''}})
     }
   }
 
@@ -315,7 +314,7 @@ const controlPanelListInfo: ControlPanelListType[] = [
                 ) : null
             }
 
-            {/* text component */}
+            {/* text element component */}
             {
               state.pageState.textArrayList.length > 0 ?
                 state.pageState.textArrayList.map((val, i) =>
@@ -387,13 +386,6 @@ const controlPanelListInfo: ControlPanelListType[] = [
                 dispatch={dispatch}
                 pageState={state}
                 activityList={activityList}
-                colorValue={state.pageState.canvasBacInputValue}
-                errorInfo={state.pageState.errorInfo}
-                // state 传入改变后的颜色值
-                onColorChange={(val: string) => dispatch({type: ActionType.BACKGROUND_COLOR, state: {bacColor: val}})}
-                // state 传入错误提示info
-                onErrorInfoChange={(val: string) => dispatch({type: ActionType.ERROR_INFO, state: {errorInfo: val}})}
-                onActivityUrlChange={(v) => dispatch({type: ActionType.ACTIVITY_URL, state: {val: v}})}
               /> : null
           }
 
@@ -411,7 +403,7 @@ const controlPanelListInfo: ControlPanelListType[] = [
             state.pageState.pageCheckedType === 'text' ? 
               <CanvasControlTextCom
                 dispatch={dispatch}
-                activeImageElement={state.pageState.activeElement as TextComStyleType}
+                activeTextElement={state.pageState.activeElement as TextComStyleType}
               /> : null
           }
         </div>

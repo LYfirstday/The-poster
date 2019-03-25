@@ -2,7 +2,12 @@ import * as React from 'react';
 import './manager.less';
 import Table from './../../components/table/table';
 import { TablePagination, TextField, Button } from '@material-ui/core';
-import { ManagerPageStateType, managerPageReducer, ManagerInfoType } from './managerReducer/managerReducer';
+import {
+  ManagerPageStateType,
+  managerPageReducer,
+  ManagerInfoType,
+  ActionType
+} from './managerReducer/managerReducer';
 import doService from './../../static/ts/axios';
 import Message from './../../components/message/message';
 import Loading from './../../components/loading/loading';
@@ -15,7 +20,7 @@ export interface requestParamsType {
   keyword?: string
 }
 
-export default (props: any) => {
+export default () => {
   const theadeData = ['用户名', '角色', '操作'];
 
   //  用户列表初始数据
@@ -34,7 +39,7 @@ export default (props: any) => {
   // on search button click
   function onSearchButtonClick() {
     let keyword = keywordInputRef.current!.value;
-    dispatch({ type: 'keyword_search', arguments: { keyword: keyword } });
+    dispatch({ type: ActionType.KEYWORD_SEARCH, arguments: { keyword: keyword } });
   }
 
   // on message
@@ -48,7 +53,7 @@ export default (props: any) => {
   const [isOpen, setIsOpen] = React.useState(false);
 
   function createManager() {
-    dispatch({ type: 'not_edit_manager' });
+    dispatch({ type: ActionType.NOT_EDIT_MANAGER });
     shouldCreateActivity();
   }
 
@@ -64,7 +69,7 @@ export default (props: any) => {
 
   // get activities lsit
   function getManagerList() {
-    dispatch({type: 'request_start'});
+    dispatch({type: ActionType.REQUEST_START});
     let data: requestParamsType = {
       number: state.number,
       size: state.size,
@@ -76,7 +81,7 @@ export default (props: any) => {
     doService('/v1/user/list', 'POST', data).then(res => {
       if (res.code === 200) {
         let tag = res.values;
-        dispatch({type: 'get_manager_data', arguments: {
+        dispatch({type: ActionType.GET_MANAGER_DATA, arguments: {
           managerList: tag.content,
           number: tag.number,
           total: tag.totalElements,
@@ -85,13 +90,13 @@ export default (props: any) => {
       } else {
         setMessage({ isMessage: !onMessage.isMessage, messageInfo: res.description });
       }
-      dispatch({type: 'request_end'});
+      dispatch({type: ActionType.REQUEST_END});
     });
   }
 
   // do create an activity type
   function doCreateManager(val: ManagerInfoType) {
-    dispatch({type: 'request_start'});
+    dispatch({type: ActionType.REQUEST_START});
     doService('/v1/user/save', 'POST', val).then(res => {
       if (res.code === 200) {
         setMessage({ isMessage: !onMessage.isMessage, messageInfo: '创建人员成功' });
@@ -100,19 +105,19 @@ export default (props: any) => {
       } else {
         setMessage({ isMessage: !onMessage.isMessage, messageInfo: res.description });
       }
-      dispatch({type: 'request_end'});
+      dispatch({type: ActionType.REQUEST_END});
     });
   }
 
   // edit activity info
   function editManagerInfo(val: ManagerInfoType) {
-    dispatch({ type: 'edit_manager_info', arguments: { managerInfo: val } });
+    dispatch({ type: ActionType.EDIT_MANAGER_INFO, arguments: { managerInfo: val } });
     shouldCreateActivity();
   }
 
   // do edit activity info
   function doEditManager(val: ManagerInfoType) {
-    dispatch({type: 'request_start'});
+    dispatch({type: ActionType.REQUEST_START});
     doService('/v1/user/update', 'POST', val).then(res => {
       if (res.code === 200) {
         setMessage({ isMessage: !onMessage.isMessage, messageInfo: '编辑人员信息成功' });
@@ -121,13 +126,13 @@ export default (props: any) => {
       } else {
         setMessage({ isMessage: !onMessage.isMessage, messageInfo: res.description });
       }
-      dispatch({type: 'request_end'});
+      dispatch({type: ActionType.REQUEST_END});
     });
   }
 
   // delete one activity info
   function deleteManager(id: string) {
-    dispatch({type: 'request_start'});
+    dispatch({type: ActionType.REQUEST_START});
     doService('/v1/user/update', 'POST', { userId: id, deleteState: 1 }).then(res => {
       if (res.code === 200) {
         setMessage({ isMessage: !onMessage.isMessage, messageInfo: '删除人员成功' });
@@ -135,7 +140,7 @@ export default (props: any) => {
       } else {
         setMessage({ isMessage: !onMessage.isMessage, messageInfo: res.description });
       }
-      dispatch({type: 'request_end'});
+      dispatch({type: ActionType.REQUEST_END});
     });
   }
 
@@ -202,11 +207,11 @@ export default (props: any) => {
         <TablePagination
           count={state.total}
           labelRowsPerPage='每页数据条数'
-          onChangePage={(_, number) => number > state.number ? dispatch({type: 'next_page'}) : dispatch({type: 'pre_page'})}
+          onChangePage={(_, number) => number > state.number ? dispatch({type: ActionType.NEXT_PAGE}) : dispatch({type: ActionType.PRE_PAGE})}
           page={state.number}
           rowsPerPage={state.size}
           rowsPerPageOptions={[10, 20, 30]}
-          onChangeRowsPerPage={(e) => dispatch({ type: 'page_size_change', arguments: { size: parseInt(e.target.value) } })}
+          onChangeRowsPerPage={(e) => dispatch({ type: ActionType.PAGE_SIZE_CHANGE, arguments: { size: parseInt(e.target.value) } })}
         />
       </div>
 
