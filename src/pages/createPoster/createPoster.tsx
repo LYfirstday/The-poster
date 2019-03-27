@@ -112,10 +112,8 @@ const controlPanelListInfo: ControlPanelListType[] = [
       if (res.code === 200) {
         let list: ActivityData[] = res.values.content;
         setActivityList(list);
-        dispatch({ type: ActionType.REQUEST_END });
-      } else {
-        dispatch({ type: ActionType.REQUEST_END });
       }
+      dispatch({ type: ActionType.REQUEST_END });
     });
   }
 
@@ -182,18 +180,14 @@ const controlPanelListInfo: ControlPanelListType[] = [
           
           // 当有元素需要旋转时，并且以元素中心为旋转点时，需要将canvas坐标系0，0点移动到旋转元素中心上
           // 围绕图片中心旋转 计算公式：( 图片宽度 / 2 [+ 图片x轴坐标], 图片高度 / 2 [+ 图片y轴坐标] )
-  
           // 设置画布旋转中心，设置为将要画的图片的中心
           context.translate(elementWidth / 2 + elementLeft, elementHeight / 2 + elementTop);
-  
           // 将画布旋转，角度为：图片的角度 * Math.PI / 180
           context.rotate(rotate * Math.PI / 180);
-  
           // 将canvas坐标系0, 0点恢复
           context.translate(-1 * ((elementWidth / 2) + elementLeft), -1 * ((elementHeight / 2) + elementTop));
           // 向画布画元素
           context.drawImage(img, elementLeft,elementTop,elementWidth,elementHeight);
-  
           // 重置当前坐标系
           context.setTransform(1, 0, 0, 1, 0, 0);
         };
@@ -205,7 +199,6 @@ const controlPanelListInfo: ControlPanelListType[] = [
   function drawText(context: CanvasRenderingContext2D, textList: TextComStyleType[]) {
     if (textList.length > 0) {
       textList.map(val => {
-        
         let elementContent = val.content.split('');
         let elementWidth = parseInt(val.elementStyles.width);
         let fontSize = parseInt(val.elementStyles.fontSize);
@@ -217,15 +210,12 @@ const controlPanelListInfo: ControlPanelListType[] = [
         context.font = `${fontSize}px ${fontFamily}`;
         context.fillStyle = val.elementStyles.color;
         context.textBaseline = 'top';
-
         // 由于不同字体、字体大小、行高以及旋转角度会有误差，0.15是减小误差的一个平衡值
         context.translate(left, top + fontSize * 0.15);
-        // 将画布旋转，角度为：图片的角度 * Math.PI / 180
         context.rotate(rotate * Math.PI / 180);
 
         let contentLine = '';
         let fontTop = 0;
-
         elementContent.map((val, i) => {
           let thisLine = contentLine + val;
           let metrics = context.measureText(thisLine);
@@ -263,9 +253,9 @@ const controlPanelListInfo: ControlPanelListType[] = [
     }
 
     let blob = new Blob([uInt8Array], {type: contentType});
-    
     let aLink = document.createElement('a');
     let aEvt = document.createEvent('HTMLEvents');
+
     aEvt.initEvent('click', true, false);
     aLink.download = '测试.png';
     aLink.href = URL.createObjectURL(blob);

@@ -7,8 +7,8 @@ import doService from './../../static/ts/axios';
 // import Message from './../../components/message/message';
 
 export interface CanvasComPropsType {
-  pageState: CanvasPageState,
-  activityList: ActivityData[],
+  pageState: CanvasPageState,     // page 状态对象
+  activityList: ActivityData[],   // 活动类型
   dispatch: React.Dispatch<ActionTypeInfo>
 }
 
@@ -59,11 +59,16 @@ export default (props: CanvasComPropsType) => {
   ]);
 
   // 画布表单
-
   const backgroundColorRef = React.useRef<HTMLInputElement | null>(null);
   const backgroundColorInputRef = React.useRef<HTMLInputElement | null>(null);
   const activityPageUrlRef = React.useRef<HTMLInputElement | null>(null);
 
+  /**
+   * 
+   * @param type form表单input change数据类型
+   * @param value form表单input change值
+   * @param thisRef 此input挂载的ref引用
+   */
   function onFormItemValueChange(type: string, value: string, thisRef: React.MutableRefObject<HTMLInputElement | null>) {
     if(type === 'backgroundColor') {
       if (value === '' || !value.startsWith('#') || value.length !== 7) {
@@ -76,7 +81,7 @@ export default (props: CanvasComPropsType) => {
         return;
       } 
     }
-    console.log(value)
+
     setErrorInfo('');
     thisRef.current!.value = value;
     props.dispatch({

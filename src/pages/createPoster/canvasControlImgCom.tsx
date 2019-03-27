@@ -81,7 +81,12 @@ const CanvasControlImgCom = (props: ImageElementControlPanelPropsType) => {
   const widthInputRef = React.useRef<HTMLInputElement | null>(null);
   const topInputRef = React.useRef<HTMLInputElement | null>(null);
   const leftInputRef = React.useRef<HTMLInputElement | null>(null);
-
+  /**
+   * 
+   * @param type form表单input change数据类型
+   * @param value form表单input change值
+   * @param thisRef 此input挂载的ref引用
+   */
   function onZIndexTopLeftHeightWidthChange(type: string, value: string, thisRef: React.MutableRefObject<HTMLInputElement | null>) {
     if (type === 'transform') {
       let reNum = /^[-\\+]?([0-9]+\\.?)?[0-9]+$/;

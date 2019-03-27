@@ -168,7 +168,12 @@ export default (props: TextElementControlPanelPropsType) => {
   const leftRef = React.useRef<HTMLInputElement | null>(null);
   const isAllowEditRef = React.useRef<HTMLInputElement | null>(null);
   const rotateInputRef = React.useRef<HTMLInputElement | null>(null);
-
+  /**
+   * 
+   * @param type form表单input change数据类型
+   * @param value form表单input change值
+   * @param thisRef 此input挂载的ref引用
+   */
   function onTextElementOwnStyleChange(type: string, value: string, ref: React.MutableRefObject<HTMLInputElement | HTMLTextAreaElement | null>) {
 
     if (type === 'color') {

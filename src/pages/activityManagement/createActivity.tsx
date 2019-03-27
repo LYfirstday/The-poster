@@ -30,6 +30,7 @@ const CreateActivity = (props: CreateActivityPropsType) => {
   const [isMessageOpen, setIsMessageOpen] = React.useState(false);
   const [messageInfo, setMessageInfo] = React.useState('');
 
+  // 提交创建表单
   function doCreateActivity() {
     let activityName = activityNameRef.current!.value;
     let activityContent = activityContentRef.current!.value;
@@ -41,7 +42,7 @@ const CreateActivity = (props: CreateActivityPropsType) => {
     let data: createActivityParamsType = {
       typeName: activityName
     };
-    
+    // 如果当前提交是编辑，则修改data，增加typeId字段
     if (props.state.isEdit) {
       let dataInfo = props.state.editActivityInfo as ActivityData;
       data.typeContext = activityContent;
@@ -59,6 +60,7 @@ const CreateActivity = (props: CreateActivityPropsType) => {
     setIsMessageOpen(!isMessageOpen);
   }
 
+  // 页面渲染时判断是否为编辑，如果是从props.state.editActivityInfo中回显内容
   React.useEffect(() => {
     if (props.isOpen) {
       if (props.state.isEdit) {

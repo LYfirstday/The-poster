@@ -80,31 +80,25 @@ const ImageElementComponent = (props: ImageElementComponentPropsType) => {
     // 将图片以中心视为坐标轴，分四个象限，右下角控制宽高按钮在不同象限设置宽高数据不同
     // 图片旋转的角度
     let rotateDeg: number = parseInt(rotateValueFilter(props.imageElement.outerElementStyles.transform));
-
     // 获取图片第一在坐标系第一象限x轴临界值角度
     let rotateValue: number = Math.round(Math.atan(ElHieght/ElWidth) / (Math.PI / 180));
-
     let newHeight: number = 0;
     let newWidth: number = 0;
-
     // 在第一象限时 X轴增大，图片高度增大；Y轴增大，图片宽度减小
     if (rotateDeg <= -rotateValue && rotateDeg >= -(90 + rotateValue)) {
       newWidth = ElWidth + (distanceY - e.clientY);
       newHeight = ElHieght + diffDisX;
     }
-
     // 在第二象限时 X轴增大，图片宽度增大；Y轴增大，图片高度增大
     if (rotateDeg > -rotateValue && rotateDeg < (90 - rotateValue)) {
       newWidth = ElWidth + diffDisX;
       newHeight = ElHieght + diffDisY;
     }
-
     // 在第三象限时  Y轴增大，图片宽度增大；X轴增大，图片高度减小
     if (rotateDeg >= (90 - rotateValue) && rotateDeg <= (90 + rotateValue)) {
       newWidth = ElWidth + (e.clientY - distanceY);
       newHeight = ElHieght + (distanceX - e.clientX);
     }
-
     // 在第四象限时  X轴增大，图片宽度减小；Y轴增大，图片高度增大
     if ((rotateDeg > (90 + rotateValue) && rotateDeg <= 180) || (rotateDeg < -(90 + rotateValue) && rotateDeg >= -180)) {
       newWidth = ElWidth + (distanceX - e.clientX);

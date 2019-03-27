@@ -17,7 +17,7 @@ export default (props: any) => {
       setErrorInfo('登录密码不能为空!');
       return;
     }
-    doService('/v1/user/login', 'POST', {...account}).then(res => {
+    doService('/v1/user/login', 'POST', account).then(res => {
       if (res.code === 200) {
         let storage = window.sessionStorage;
         storage.clear();
